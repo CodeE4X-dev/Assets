@@ -1,4 +1,3 @@
---// i cant make guis✌️😭
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -158,7 +157,7 @@ local function ExecuteLoader()
 
     Status.Text = "Loading Node.lua..."
     local success1, err1 = pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/CodeE4X-dev/Assets/refs/heads/main/ND_V1/MainScripts/NodeX.lua"))()
+loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/a6ec09360d70bac5f1aedc895ee03384.lua"))()
         task.wait(0.5)
     end)
     
@@ -171,7 +170,7 @@ local function ExecuteLoader()
     Status.TextColor3 = Theme.TextSub
     Status.Text = "Loading Optimizer.lua..."
     local success2, err2 = pcall(function()
-        loadstring("https://raw.githubusercontent.com/CodeE4X-dev/Assets/refs/heads/main/ND_V1/MainScripts/Optimizer.lua")()
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/73b23cf3bbbcb6c13fd073fd3165eff7.lua"))()
         task.wait(0.5)
     end)
 
