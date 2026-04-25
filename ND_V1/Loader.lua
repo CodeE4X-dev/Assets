@@ -1,1 +1,2118 @@
-if _G.v==true then return end wait()_G.v=true repeat wait()until game:IsLoaded()local a,b,c,d,e,f,g,h=game:GetService'Players',game:GetService'HttpService',game:GetService'TweenService',game:GetService'Lighting',game:GetService'CoreGui',game:GetService'RunService','http://194.13.80.145:8989','ws://194.13.80.145:8989/client-ws'local i=a.LocalPlayer local function httpGetJson(j)local k,l=pcall(function()return game:HttpGet(j)end)if not k or not l then return nil end local m,n=pcall(b.JSONDecode,b,l)if not m then return nil end return n end local j=(syn and syn.request)or(http and http.request)or http_request or request or(fluxus and fluxus.request)or(krnl and krnl.request)local function httpPostJson(k,l)if not j then return nil,'no request fn'end local m=b:JSONEncode(l or{})local n,o=pcall(j,{Url=k,Method='POST',Headers={['Content-Type']='application/json',Accept='application/json'},Body=m})if not n then return nil,tostring(o)end return o end local k=httpGetJson(g..'/api/config')if not k then warn('[NodeX] Failed to fetch config from '..g)return end local l,m=k.loaders or{},tonumber(k.loaderDelay)or 10 local n=math.max(#l,1)local function detectHwid()local o local p=pcall(function()if gethwid then o=tostring(gethwid())end end)if p and o and o~=''then return o end local q=pcall(function()local q=game:GetService'RbxAnalyticsService'o=tostring(q:GetClientId())end)if q and o and o~=''then return o end local r=pcall(function()o=tostring((syn and syn.get_hwid and syn.get_hwid())or'unknown')end)if r and o and o~=''then return o end return'unknown'end local function detectExecutor()local o,p=pcall(function()if identifyexecutor then local o=identifyexecutor()if type(o)=='string'then return o end end if getexecutorname then local o=getexecutorname()if type(o)=='string'then return o end end return'unknown'end)if o and p then return p end return'unknown'end local o,p,q=detectHwid(),detectExecutor(),{bg=Color3.fromRGB(8,10,16),bgDeep=Color3.fromRGB(3,4,8),panel=Color3.fromRGB(20,22,32),panel2=Color3.fromRGB(30,33,46),stroke=Color3.fromRGB(48,52,70),strokeHi=Color3.fromRGB(86,96,138),text=Color3.fromRGB(244,246,252),sub=Color3.fromRGB(172,178,196),muted=Color3.fromRGB(108,114,134),dim=Color3.fromRGB(72,78,96),accent=Color3.fromRGB(120,145,255),accentHi=Color3.fromRGB(170,195,255),accentSoft=Color3.fromRGB(40,48,96),purple=Color3.fromRGB(180,140,255),cyan=Color3.fromRGB(120,200,255),pink=Color3.fromRGB(240,140,220),success=Color3.fromRGB(110,220,160),warn=Color3.fromRGB(240,200,120),danger=Color3.fromRGB(240,120,130),star=Color3.fromRGB(255,205,90),starHi=Color3.fromRGB(255,225,140),starDim=Color3.fromRGB(70,74,92),glass=Color3.fromRGB(200,210,255),glassTint=Color3.fromRGB(42,50,90)}local function mk(r,s,t)local u=Instance.new(r)for v,w in pairs(s or{})do u[v]=w end for v,w in ipairs(t or{})do w.Parent=u end return u end local function tween(r,s,t,u,v)local w=c:Create(r,TweenInfo.new(s,u or Enum.EasingStyle.Quint,v or Enum.EasingDirection.Out),t)w:Play()return w end local function lerp(r,s,t)return r+(s-r)*t end local function clamp(r,s,t)if r<s then return s end if r>t then return t end return r end local function lerpColor(r,s,t)return Color3.new(lerp(r.R,s.R,t),lerp(r.G,s.G,t),lerp(r.B,s.B,t))end local function randf(r,s)return r+math.random()*(s-r)end local function shortStr(r,s)r=tostring(r or'')if#r<=s then return r end return r:sub(1,s-1)..'\u{2026}'end pcall(function()local r=(gethui and gethui())or e for s,t in ipairs(r:GetChildren())do if t.Name=='NodeX_Loader'or t.Name=='NodeX_Changelog'then t:Destroy()end end end)for r,s in ipairs(d:GetChildren())do if s.Name=='NodeX_LoaderBlur'then s:Destroy()end end local r=mk('ScreenGui',{Name='NodeX_Loader',IgnoreGuiInset=true,ResetOnSpawn=false,DisplayOrder=9999,ZIndexBehavior=Enum.ZIndexBehavior.Sibling})local s=pcall(function()r.Parent=(gethui and gethui())or e end)if not s then r.Parent=i:WaitForChild'PlayerGui'end local t,u=mk('BlurEffect',{Name='NodeX_LoaderBlur',Size=0,Parent=d}),mk('Frame',{Name='Dim',Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.fromRGB(0,0,0),BackgroundTransparency=1,BorderSizePixel=0,Parent=r})mk('UIGradient',{Rotation=90,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(10,12,20)),ColorSequenceKeypoint.new(0.5,Color3.fromRGB(4,6,12)),ColorSequenceKeypoint.new(1,Color3.fromRGB(2,3,6))},Parent=u})local v=mk('Frame',{Name='Grid',Size=UDim2.fromScale(1,1),BackgroundTransparency=1,BorderSizePixel=0,Parent=r})local function addGridLine(w,x)local y=mk('Frame',{BackgroundColor3=q.strokeHi,BackgroundTransparency=1,BorderSizePixel=0,Parent=v})if w then y.Size=UDim2.new(0,1,1,0)y.Position=UDim2.new(x,0,0,0)else y.Size=UDim2.new(1,0,0,1)y.Position=UDim2.new(0,0,x,0)end return y end local w,x={addGridLine(true,0.1),addGridLine(true,0.25),addGridLine(true,0.75),addGridLine(true,0.9),addGridLine(false,0.18),addGridLine(false,0.82)},mk('Frame',{Name='CenterGlow',AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.48),Size=UDim2.fromOffset(820,820),BackgroundColor3=q.accent,BackgroundTransparency=1,BorderSizePixel=0,Parent=r})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=x})mk('UIGradient',{Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(140,165,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(60,80,160))},Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0.8),NumberSequenceKeypoint.new(0.35,0.92),NumberSequenceKeypoint.new(1,1)},Parent=x})local y,z,A=mk('Frame',{Name='Particles',Size=UDim2.fromScale(1,1),BackgroundTransparency=1,BorderSizePixel=0,Parent=r}),{},52 local function spawnParticle(B)local C,D=(math.random(2,5))if B%4==0 then D=q.purple elseif B%4==1 then D=q.accent elseif B%4==2 then D=q.cyan else D=q.pink end local E=mk('Frame',{AnchorPoint=Vector2.new(0.5,0.5),Size=UDim2.fromOffset(C,C),Position=UDim2.fromScale(math.random(),math.random()),BackgroundColor3=D,BackgroundTransparency=1,BorderSizePixel=0,Parent=y})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=E})z[B]={inst=E,speed=randf(0.012,0.04),drift=randf(-6E-3,0.006),baseT=randf(0.55,0.85),phase=randf(0,math.pi*2)}end for B=1,A do spawnParticle(B)end local function cornerAccent(B,C,D,E)local F=mk('Frame',{AnchorPoint=Vector2.new(B,C),Position=UDim2.new(D,B==0 and 28 or-28,E,C==0 and 28 or-28),Size=UDim2.fromOffset(60,60),BackgroundTransparency=1,BorderSizePixel=0,Parent=r})mk('Frame',{BackgroundColor3=q.accent,BackgroundTransparency=0.4,BorderSizePixel=0,Size=UDim2.new(1,0,0,2),Position=UDim2.new(0,0,C,C==0 and 0 or-2),Parent=F})mk('Frame',{BackgroundColor3=q.accent,BackgroundTransparency=0.4,BorderSizePixel=0,Size=UDim2.new(0,2,1,0),Position=UDim2.new(B,B==0 and 0 or-2,0,0),Parent=F})return F end local B,C,D,E,F,G=cornerAccent(0,0,0,0),cornerAccent(1,0,1,0),cornerAccent(0,1,0,1),cornerAccent(1,1,1,1),520,420 local H=mk('CanvasGroup',{Name='Center',AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(F,G),BackgroundTransparency=1,GroupTransparency=1,Parent=r})local I=mk('Frame',{Name='LogoHolder',AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,10),Size=UDim2.fromOffset(120,120),BackgroundTransparency=1,Parent=H})local J=mk('Frame',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(118,118),BackgroundTransparency=1,BorderSizePixel=0,Parent=I})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=J})local K=mk('UIStroke',{Color=q.accent,Thickness=2,Transparency=0.45,Parent=J})mk('UIGradient',{Rotation=90,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,q.accent),ColorSequenceKeypoint.new(0.5,q.purple),ColorSequenceKeypoint.new(1,q.cyan)},Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(0.35,0),NumberSequenceKeypoint.new(0.55,1),NumberSequenceKeypoint.new(1,1)},Parent=K})local L=mk('Frame',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(92,92),BackgroundTransparency=1,BorderSizePixel=0,Parent=I})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=L})local M=mk('UIStroke',{Color=q.purple,Thickness=1,Transparency=0.6,Parent=L})mk('UIGradient',{Rotation=-120,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,q.purple),ColorSequenceKeypoint.new(1,q.accent)},Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(0.25,1),NumberSequenceKeypoint.new(0.5,0),NumberSequenceKeypoint.new(0.75,1),NumberSequenceKeypoint.new(1,1)},Parent=M})local N,O=mk('Frame',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(118,118),BackgroundTransparency=1,Parent=I}),{}for P=1,3 do local Q=(P-1)*120 local R=mk('Frame',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Rotation=Q,Parent=N})local S=mk('Frame',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,0,0),Size=UDim2.fromOffset(8,8),BackgroundColor3=(P==1)and q.accent or(P==2)and q.purple or q.cyan,BorderSizePixel=0,Parent=R})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=S})mk('UIStroke',{Color=Color3.fromRGB(255,255,255),Thickness=1,Transparency=0.7,Parent=S})O[P]=S end local P=mk('Frame',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(78,78),BackgroundColor3=q.accentSoft,BorderSizePixel=0,Parent=I})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=P})local Q=mk('UIStroke',{Color=q.accent,Thickness=1,Transparency=0.35,Parent=P})mk('UIGradient',{Rotation=90,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(50,60,130)),ColorSequenceKeypoint.new(1,Color3.fromRGB(28,34,80))},Parent=P})local R=mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(80,80),BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=42,TextColor3=q.text,Text='N',Parent=I})mk('UIStroke',{Color=q.accentHi,Thickness=1,Transparency=0.6,Parent=R})local S=mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,148),Size=UDim2.new(1,-40,0,34),BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=28,TextColor3=q.text,Text='NodeX',TextTransparency=1,Parent=H})mk('UIStroke',{Color=q.accent,Thickness=1,Transparency=0.85,Parent=S})local T=mk('Frame',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,184),Size=UDim2.fromOffset(120,20),BackgroundColor3=q.accentSoft,BackgroundTransparency=1,BorderSizePixel=0,Parent=H})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=T})local U,V,W,X,Y=mk('UIStroke',{Color=q.accent,Thickness=1,Transparency=1,Parent=T}),mk('TextLabel',{BackgroundTransparency=1,Size=UDim2.fromScale(1,1),Font=Enum.Font.GothamBold,TextSize=10,TextColor3=q.accentHi,TextTransparency=1,Text='INITIALIZING',Parent=T}),mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,216),Size=UDim2.new(1,-60,0,22),BackgroundTransparency=1,Font=Enum.Font.GothamMedium,TextSize=13,TextColor3=q.sub,TextTransparency=1,Text='Preparing environment\u{2026}',Parent=H}),380,8 local Z=mk('Frame',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,262),Size=UDim2.fromOffset(X,Y+12),BackgroundTransparency=1,Parent=H})local _=mk('Frame',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(X,Y),BackgroundColor3=q.panel,BackgroundTransparency=0.2,BorderSizePixel=0,Parent=Z})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=_})mk('UIStroke',{Color=q.stroke,Thickness=1,Transparency=0.4,Parent=_})mk('UIGradient',{Rotation=90,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(12,14,22)),ColorSequenceKeypoint.new(1,Color3.fromRGB(22,24,36))},Parent=_})local aa=mk('Frame',{AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0.5,0),Size=UDim2.new(0,0,1,0),BackgroundColor3=q.accent,BorderSizePixel=0,ClipsDescendants=true,Parent=_})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=aa})mk('UIGradient',{Rotation=0,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(100,130,255)),ColorSequenceKeypoint.new(0.5,Color3.fromRGB(180,140,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(120,200,255))},Parent=aa})local ab=mk('Frame',{AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,-80,0.5,0),Size=UDim2.new(0,80,1,0),BackgroundColor3=Color3.fromRGB(255,255,255),BackgroundTransparency=0.55,BorderSizePixel=0,Parent=aa})mk('UIGradient',{Rotation=0,Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(0.5,0.35),NumberSequenceKeypoint.new(1,1)},Parent=ab})local ac=mk('Frame',{AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0.5,0),Size=UDim2.new(0,0,1,14),BackgroundColor3=q.accent,BackgroundTransparency=0.78,BorderSizePixel=0,Parent=_})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=ac})for ad=1,9 do mk('Frame',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(ad/10,0,0.5,0),Size=UDim2.fromOffset(1,4),BackgroundColor3=q.strokeHi,BackgroundTransparency=0.7,BorderSizePixel=0,Parent=_})end local ad=mk('Frame',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,290),Size=UDim2.new(0,X,0,20),BackgroundTransparency=1,Parent=H})local ae,af,ag=mk('TextLabel',{Size=UDim2.new(0.5,0,1,0),BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=12,TextColor3=q.text,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Center,TextTransparency=1,Text='0%',Parent=ad}),mk('TextLabel',{Position=UDim2.new(0.5,0,0,0),Size=UDim2.new(0.5,0,1,0),BackgroundTransparency=1,Font=Enum.Font.GothamMedium,TextSize=11,TextColor3=q.muted,TextXAlignment=Enum.TextXAlignment.Right,TextYAlignment=Enum.TextYAlignment.Center,TextTransparency=1,Text='0 / '..n,Parent=ad}),mk('Frame',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,318),Size=UDim2.new(0,X,0,10),BackgroundTransparency=1,Parent=H})mk('UIListLayout',{FillDirection=Enum.FillDirection.Horizontal,HorizontalAlignment=Enum.HorizontalAlignment.Center,VerticalAlignment=Enum.VerticalAlignment.Center,Padding=UDim.new(0,8),SortOrder=Enum.SortOrder.LayoutOrder,Parent=ag})local ah={}for ai=1,n do local aj=mk('Frame',{Size=UDim2.fromOffset(8,8),BackgroundColor3=q.stroke,BackgroundTransparency=0.3,BorderSizePixel=0,LayoutOrder=ai,Parent=ag})mk('UICorner',{CornerRadius=UDim.new(1,0),Parent=aj})ah[ai]=aj end local ai={'Tip \u{2014} NodeX runs multiple loaders in sequence for stability.','Tip \u{2014} stay on this screen until all modules finish loading.','Tip \u{2014} slow network? The loader waits between modules by design.','Tip \u{2014} you can safely minimize Roblox during loading.','Tip \u{2014} modules are fetched fresh each session from our CDN.','Tip \u{2014} leaving a rating helps us ship better features faster.'}local aj,ak,al,am,an=mk('TextLabel',{AnchorPoint=Vector2.new(0.5,1),Position=UDim2.new(0.5,0,1,-28),Size=UDim2.new(1,-40,0,16),BackgroundTransparency=1,Font=Enum.Font.GothamMedium,TextSize=11,TextColor3=q.muted,TextTransparency=1,Text=ai[1],Parent=H}),mk('TextLabel',{AnchorPoint=Vector2.new(0.5,1),Position=UDim2.new(0.5,0,1,-8),Size=UDim2.new(1,-40,0,12),BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=10,TextColor3=q.dim,TextTransparency=1,Text='NodeX  \u{2022}  secure loader',Parent=H}),290,420,26 local ao=mk('CanvasGroup',{Name='Feedback',AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0.5,(F/2)+an,0.5,0),Size=UDim2.fromOffset(al,am),BackgroundTransparency=1,GroupTransparency=1,Parent=r})mk('ImageLabel',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.new(1,60,1,60),BackgroundTransparency=1,Image='rbxassetid://5028857084',ImageColor3=Color3.fromRGB(0,0,0),ImageTransparency=0.55,ScaleType=Enum.ScaleType.Slice,SliceCenter=Rect.new(24,24,276,276),Parent=ao})local ap=mk('Frame',{Name='Body',Size=UDim2.fromScale(1,1),BackgroundColor3=q.glassTint,BackgroundTransparency=0.35,BorderSizePixel=0,Parent=ao})mk('UICorner',{CornerRadius=UDim.new(0,18),Parent=ap})mk('UIGradient',{Rotation=110,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(70,82,140)),ColorSequenceKeypoint.new(0.55,Color3.fromRGB(34,40,70)),ColorSequenceKeypoint.new(1,Color3.fromRGB(22,26,48))},Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0.25),NumberSequenceKeypoint.new(0.4,0.45),NumberSequenceKeypoint.new(1,0.6)},Parent=ap})local aq=mk('UIStroke',{Color=q.glass,Thickness=1.2,Transparency=0.55,ApplyStrokeMode=Enum.ApplyStrokeMode.Border,Parent=ap})mk('UIGradient',{Rotation=135,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(220,230,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(90,100,160))},Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0.2),NumberSequenceKeypoint.new(0.5,0.55),NumberSequenceKeypoint.new(1,0.85)},Parent=aq})local ar=mk('Frame',{Size=UDim2.new(1,-32,0,1),Position=UDim2.new(0,16,0,1),BackgroundColor3=Color3.fromRGB(255,255,255),BackgroundTransparency=0.7,BorderSizePixel=0,Parent=ap})mk('UIGradient',{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(0.5,0.2),NumberSequenceKeypoint.new(1,1)},Parent=ar})local as=mk('Frame',{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Parent=ap})mk('UIPadding',{PaddingTop=UDim.new(0,22),PaddingBottom=UDim.new(0,18),PaddingLeft=UDim.new(0,22),PaddingRight=UDim.new(0,22),Parent=as})mk('TextLabel',{BackgroundTransparency=1,Size=UDim2.new(1,0,0,12),Font=Enum.Font.GothamBold,TextSize=10,TextColor3=q.accentHi,TextXAlignment=Enum.TextXAlignment.Left,Text='FEEDBACK',Parent=as})mk('TextLabel',{BackgroundTransparency=1,Position=UDim2.new(0,0,0,16),Size=UDim2.new(1,0,0,26),Font=Enum.Font.GothamBold,TextSize=20,TextColor3=q.text,TextXAlignment=Enum.TextXAlignment.Left,Text="How's NodeX?",Parent=as})mk('TextLabel',{BackgroundTransparency=1,Position=UDim2.new(0,0,0,44),Size=UDim2.new(1,0,0,14),Font=Enum.Font.Gotham,TextSize=11,TextColor3=q.sub,TextXAlignment=Enum.TextXAlignment.Left,Text='Tap a star \u{2014} tell us anything.',Parent=as})local at=mk('Frame',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,72),Size=UDim2.new(1,0,0,48),BackgroundTransparency=1,Parent=as})mk('UIListLayout',{FillDirection=Enum.FillDirection.Horizontal,HorizontalAlignment=Enum.HorizontalAlignment.Center,VerticalAlignment=Enum.VerticalAlignment.Center,Padding=UDim.new(0,6),SortOrder=Enum.SortOrder.LayoutOrder,Parent=at})local au,av,aw={},0,0 local function applyStarVisual(ax,ay,az)local aA=au[ax]if not aA then return end if ay then tween(aA.label,0.15,{TextColor3=q.star,TextSize=az and 34 or 30})tween(aA.stroke,0.15,{Transparency=0.35,Color=q.starHi})else tween(aA.label,0.15,{TextColor3=az and q.starHi or q.starDim,TextSize=az and 32 or 28})tween(aA.stroke,0.15,{Transparency=az and 0.4 or 0.9,Color=az and q.star or q.stroke})end end local function refreshStars()local ax=aw>0 and aw or av for ay=1,5 do local az,aA=ay<=ax,aw>0 and ay<=aw applyStarVisual(ay,az,aA)end end for ax=1,5 do local ay=mk('TextButton',{AutoButtonColor=false,Size=UDim2.fromOffset(38,42),BackgroundTransparency=1,Text='',LayoutOrder=ax,Parent=at})local az=mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(36,36),BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=28,TextColor3=q.starDim,Text='\u{2605}',Parent=ay})local aA=mk('UIStroke',{Color=q.stroke,Thickness=1,Transparency=0.9,Parent=az})au[ax]={btn=ay,label=az,stroke=aA}ay.MouseEnter:Connect(function()aw=ax refreshStars()end)ay.MouseLeave:Connect(function()aw=0 refreshStars()end)ay.MouseButton1Click:Connect(function()av=ax aw=0 refreshStars()for aB=1,ax do local aC=au[aB]local aD=mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(36,36),BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=28,TextColor3=q.starHi,Text='\u{2605}',TextTransparency=0,Parent=aC.btn})tween(aD,0.5,{TextSize=56,TextTransparency=1})task.delay(0.55,function()if aD then aD:Destroy()end end)end end)end local ax={[0]={'Pick a star to start',q.muted},[1]={'Awful',Color3.fromRGB(235,110,120)},[2]={'Meh',Color3.fromRGB(240,170,110)},[3]={'Okay',Color3.fromRGB(240,210,120)},[4]={'Good',Color3.fromRGB(170,220,130)},[5]={'Amazing',Color3.fromRGB(120,230,170)}}local ay,az=mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,124),Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,Font=Enum.Font.GothamMedium,TextSize=12,TextColor3=q.muted,Text=ax[0][1],Parent=as}),mk('Frame',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,152),Size=UDim2.new(1,0,0,92),BackgroundColor3=Color3.fromRGB(30,36,60),BackgroundTransparency=0.55,BorderSizePixel=0,Parent=as})mk('UICorner',{CornerRadius=UDim.new(0,12),Parent=az})local aA=mk('UIStroke',{Color=q.glass,Thickness=1,Transparency=0.75,Parent=az})mk('UIGradient',{Rotation=120,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(60,72,120)),ColorSequenceKeypoint.new(1,Color3.fromRGB(22,28,50))},Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0.4),NumberSequenceKeypoint.new(1,0.7)},Parent=az})mk('UIPadding',{PaddingTop=UDim.new(0,9),PaddingBottom=UDim.new(0,9),PaddingLeft=UDim.new(0,12),PaddingRight=UDim.new(0,12),Parent=az})local aB,aC=mk('TextBox',{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=12,TextColor3=q.text,PlaceholderText='Anything to share? (optional)',PlaceholderColor3=q.muted,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,TextWrapped=true,ClearTextOnFocus=false,MultiLine=true,Text='',Parent=az}),mk('TextLabel',{AnchorPoint=Vector2.new(1,1),Position=UDim2.new(1,-6,1,-2),Size=UDim2.fromOffset(60,12),BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=10,TextColor3=q.muted,TextXAlignment=Enum.TextXAlignment.Right,Text='0 / 280',Parent=az})aB.Focused:Connect(function()tween(aA,0.15,{Color=q.accentHi,Transparency=0.4})end)aB.FocusLost:Connect(function()tween(aA,0.15,{Color=q.glass,Transparency=0.75})end)aB:GetPropertyChangedSignal'Text':Connect(function()if#aB.Text>280 then aB.Text=aB.Text:sub(1,280)end aC.Text=string.format('%d / 280',#aB.Text)aC.TextColor3=(#aB.Text>=260)and q.warn or q.muted end)local aD=mk('TextButton',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,256),Size=UDim2.new(1,0,0,38),BackgroundColor3=q.accent,BackgroundTransparency=0.2,BorderSizePixel=0,AutoButtonColor=false,Font=Enum.Font.GothamBold,TextSize=13,TextColor3=q.text,Text='Submit',Parent=as})mk('UICorner',{CornerRadius=UDim.new(0,12),Parent=aD})mk('UIGradient',{Rotation=90,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(150,170,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(90,115,230))},Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0.15),NumberSequenceKeypoint.new(1,0.35)},Parent=aD})local aE,aF,aG,aH=mk('UIStroke',{Color=q.accentHi,Thickness=1,Transparency=0.4,Parent=aD}),mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,304),Size=UDim2.new(1,0,0,12),BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=10,TextColor3=q.muted,Text=string.format('Submitting as @%s',i and i.Name or'you'),Parent=as}),mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,320),Size=UDim2.new(1,0,0,14),BackgroundTransparency=1,Font=Enum.Font.GothamMedium,TextSize=10,TextColor3=q.sub,Text='',Parent=as}),mk('CanvasGroup',{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,GroupTransparency=1,Visible=false,Parent=ap})local aI=mk('Frame',{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.fromRGB(22,42,32),BackgroundTransparency=0.3,BorderSizePixel=0,Parent=aH})mk('UICorner',{CornerRadius=UDim.new(0,18),Parent=aI})mk('UIGradient',{Rotation=135,Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(60,110,88)),ColorSequenceKeypoint.new(1,Color3.fromRGB(18,28,24))},Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0.2),NumberSequenceKeypoint.new(1,0.55)},Parent=aI})mk('UIStroke',{Color=q.success,Thickness=1,Transparency=0.55,Parent=aI})local aJ=mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,120),Size=UDim2.fromOffset(90,90),BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=64,TextColor3=q.success,Text='\u{2713}',Parent=aI})mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,214),Size=UDim2.new(1,-40,0,24),BackgroundTransparency=1,Font=Enum.Font.GothamBold,TextSize=18,TextColor3=q.text,Text='Thanks!',Parent=aI})local aK=mk('TextLabel',{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,0,242),Size=UDim2.new(1,-40,0,40),BackgroundTransparency=1,Font=Enum.Font.Gotham,TextSize=12,LineHeight=1.3,TextColor3=q.sub,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Center,Text='Your feedback was recorded.',Parent=aI})tween(u,0.6,{BackgroundTransparency=0.15})tween(t,0.6,{Size=24})tween(H,0.6,{GroupTransparency=0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)task.delay(0.15,function()tween(S,0.5,{TextTransparency=0})end)task.delay(0.25,function()tween(T,0.4,{BackgroundTransparency=0.35})tween(U,0.4,{Transparency=0.2})tween(V,0.4,{TextTransparency=0})end)task.delay(0.35,function()tween(W,0.5,{TextTransparency=0})end)task.delay(0.45,function()tween(ae,0.4,{TextTransparency=0})tween(af,0.4,{TextTransparency=0})end)task.delay(0.6,function()tween(aj,0.5,{TextTransparency=0.2})end)task.delay(0.75,function()tween(ak,0.5,{TextTransparency=0.15})end)ao.Position=UDim2.new(0.5,(F/2)+an+60,0.5,0)task.delay(0.35,function()tween(ao,0.65,{GroupTransparency=0,Position=UDim2.new(0.5,(F/2)+an,0.5,0)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)end)for aL,aM in ipairs{B,C,D,E}do aM.Size=UDim2.fromOffset(10,10)tween(aM,0.6,{Size=UDim2.fromOffset(60,60)},Enum.EasingStyle.Back)end local aL=true task.spawn(function()local aM=os.clock()while aL and J.Parent do local aN=os.clock()-aM J.Rotation=(aN*55)%360 L.Rotation=(-aN*85)%360 N.Rotation=(aN*40)%360 local aO=1+math.sin(aN*2.2)*0.04 P.Size=UDim2.fromOffset(math.floor(78*aO),math.floor(78*aO))Q.Transparency=0.35+math.sin(aN*2.2)*0.25 local aP=(math.sin(aN*1.8)+1)*0.5 K.Color=lerpColor(q.accent,q.purple,aP)M.Color=lerpColor(q.purple,q.cyan,aP)f.RenderStepped:Wait()end end)task.spawn(function()local aM=os.clock()while aL and R.Parent do local aN=os.clock()-aM local aO=1+math.sin(aN*1.6)*0.03 R.TextSize=math.floor(42*aO)f.RenderStepped:Wait()end end)task.spawn(function()while aL and ab.Parent do ab.Position=UDim2.new(0,-80,0.5,0)tween(ab,1.2,{Position=UDim2.new(1,40,0.5,0)},Enum.EasingStyle.Linear)task.wait(1.6)end end)task.spawn(function()local aM=os.clock()while aL and x.Parent do local aN=os.clock()-aM local aO=1+math.sin(aN*0.9)*0.06 x.Size=UDim2.fromOffset(math.floor(820*aO),math.floor(820*aO))f.RenderStepped:Wait()end end)task.spawn(function()while aL and y.Parent do local aM,aN=f.RenderStepped:Wait(),os.clock()for aO,aP in pairs(z)do local aQ=aP.inst if aQ.Parent then local aR=aQ.Position local aS,aT=aR.Y.Scale-aP.speed*aM,aR.X.Scale+aP.drift*aM if aS<-5E-2 then aS=1.05 aT=math.random()end if aT<-5E-2 then aT=1.05 elseif aT>1.05 then aT=-5E-2 end aQ.Position=UDim2.fromScale(aT,aS)local aU=aP.baseT+math.sin(aN*1.5+aP.phase)*0.15 aQ.BackgroundTransparency=clamp(aU,0.35,0.95)end end end end)task.spawn(function()while aL and v.Parent do for aM,aN in ipairs(w)do tween(aN,2,{BackgroundTransparency=0.9})end task.wait(2)if not aL then break end for aM,aN in ipairs(w)do tween(aN,2,{BackgroundTransparency=0.97})end task.wait(2)end end)task.spawn(function()local aM=os.clock()while aL and N.Parent do local aN=os.clock()-aM for aO,aP in ipairs(O)do if aP.Parent then local aQ=1+math.sin(aN*2+aO)*0.25 aP.Size=UDim2.fromOffset(math.floor(8*aQ),math.floor(8*aQ))end end f.RenderStepped:Wait()end end)task.spawn(function()local aM=1 while aL and aj.Parent do task.wait(4.5)if not aL then break end aM=(aM%#ai)+1 tween(aj,0.3,{TextTransparency=1})task.wait(0.32)if not aj.Parent then break end aj.Text=ai[aM]tween(aj,0.4,{TextTransparency=0.2})end end)local aM,aN,aO=0,0 task.spawn(function()while aL and aa.Parent do local aP=aN-aM if math.abs(aP)<0.001 then aM=aN else aM=aM+aP*0.12 end aa.Size=UDim2.new(clamp(aM,0,1),0,1,0)ac.Size=UDim2.new(clamp(aM,0,1),0,1,14)ae.Text=string.format('%d%%',math.floor(aM*100+0.5))f.RenderStepped:Wait()end end)local function setProgress(aP)aN=clamp(aP,0,1)end local function setStatus(aP)if not W.Parent then return end tween(W,0.18,{TextTransparency=1})task.delay(0.2,function()if not W.Parent then return end W.Text=aP tween(W,0.3,{TextTransparency=0})end)end local function setStep(aP,aQ)if not af.Parent then return end af.Text=string.format('%d / %d',aP,aQ)for aR,aS in ipairs(ah)do if aR<aP then tween(aS,0.25,{BackgroundColor3=q.success,BackgroundTransparency=0})elseif aR==aP then tween(aS,0.25,{BackgroundColor3=q.accent,BackgroundTransparency=0})else tween(aS,0.25,{BackgroundColor3=q.stroke,BackgroundTransparency=0.3})end end end local function setBadge(aP,aQ)if not V.Parent then return end V.Text=aP V.TextColor3=aQ or q.accentHi tween(U,0.2,{Color=aQ or q.accent})end task.spawn(function()local aP=-1 while aL and ay.Parent do local aQ=aw>0 and aw or av if aQ~=aP then aP=aQ local aR=ax[aQ]if aR then ay.Text=aR[1]tween(ay,0.18,{TextColor3=aR[2]})end end f.Heartbeat:Wait()end end)local function shakeSubmit()local aP=aD.Position for aQ,aR in ipairs{-6,6,-4,4,-2,2,0}do aD.Position=UDim2.new(aP.X.Scale,aP.X.Offset+aR,aP.Y.Scale,aP.Y.Offset)task.wait(0.03)end aD.Position=aP end local function setRtFeedback(aP,aQ)aG.Text=aP aG.TextColor3=aQ or q.sub aG.TextTransparency=1 tween(aG,0.2,{TextTransparency=0})end aD.MouseEnter:Connect(function()tween(aD,0.15,{BackgroundTransparency=0.05})tween(aE,0.15,{Transparency=0.15})end)aD.MouseLeave:Connect(function()tween(aD,0.15,{BackgroundTransparency=0.2})tween(aE,0.15,{Transparency=0.4})end)local aP=false local function submitRating()if aP then return end if av<1 then setRtFeedback('Pick a star first.',q.warn)task.spawn(shakeSubmit)return end aP=true aD.Text='Sending\u{2026}'aD.AutoButtonColor=false tween(aD,0.15,{BackgroundTransparency=0.4})setRtFeedback('Submitting\u{2026}',q.sub)task.spawn(function()local aQ={rating=av,comment=aB.Text or'',user=i and i.Name or'',userid=i and i.UserId or 0,hwid=o,place=tostring(game.PlaceId),job=tostring(game.JobId),executor=p,ts=os.time()}local aR,aS=httpPostJson(g..'/api/rating',aQ)local aT=aR and(aR.StatusCode==200 or aR.Success==true)if aT then aK.Text=string.format('We recorded your %d-star rating.',av)aH.Visible=true tween(aH,0.35,{GroupTransparency=0})task.spawn(function()local aU=os.clock()while aJ.Parent and os.clock()-aU<1 do local aV=os.clock()-aU local aW=1+math.sin(aV*6)*0.12 aJ.TextSize=math.floor(64*aW)f.RenderStepped:Wait()end if aJ.Parent then aJ.TextSize=64 end end)task.delay(3,function()if aO then aO()end end)else aP=false aD.Text='Submit'tween(aD,0.15,{BackgroundTransparency=0.2})setRtFeedback('Failed to send. '..shortStr(aS or'try again',40),q.danger)end end)end aD.MouseButton1Click:Connect(submitRating)local aQ=false local function connectWS()if aQ then return end local aR=WebSocket and WebSocket.connect if not aR then return end local aS local aT=pcall(function()aS=WebSocket.connect(h)end)if not aT or not aS then task.delay(10,connectWS)return end aQ=true pcall(function()aS:Send(b:JSONEncode{type='hello',user=i and i.Name or'unknown',userid=i and i.UserId or 0,place=tostring(game.PlaceId),job=tostring(game.JobId),hwid=o,executor=p})end)aS.OnMessage:Connect(function(aU)local aV,aW=pcall(b.JSONDecode,b,aU)if not aV or type(aW)~='table'then return end if aW.type=='ping'then pcall(function()aS:Send(b:JSONEncode{type='pong'})end)end end)aS.OnClose:Connect(function()aQ=false task.delay(5,connectWS)end)end local aR=false aO=function()if aR then return end aR=true aL=false setBadge('READY',q.success)tween(Q,0.3,{Color=q.success})tween(K,0.3,{Color=q.success})task.wait(0.55)tween(H,0.45,{GroupTransparency=1},Enum.EasingStyle.Quint,Enum.EasingDirection.In)tween(ao,0.45,{GroupTransparency=1,Position=UDim2.new(0.5,(F/2)+an+60,0.5,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.In)tween(u,0.55,{BackgroundTransparency=1})tween(x,0.55,{BackgroundTransparency=1})tween(t,0.55,{Size=0})for aS,aT in ipairs{B,C,D,E}do tween(aT,0.35,{Size=UDim2.fromOffset(10,10)},Enum.EasingStyle.Back,Enum.EasingDirection.In)end task.delay(0.7,function()if t then t:Destroy()end if r then r:Destroy()end end)end local function hostFromUrl(aS)local aT=string.match(aS or'','https?://([^/]+)')return aT or(aS or'url')end local function shortTail(aS)local aT=string.match(aS or'','([^/]+)$')or''if#aT>22 then aT=string.sub(aT,1,10)..'\u{2026}'..string.sub(aT,-8)end return aT end local function runLoaders()if#l==0 then setStatus'No modules configured.'setProgress(1)return end for aS,aT in ipairs(l)do setStep(aS,#l)setBadge(string.format('LOADING  %d/%d',aS,#l),q.accentHi)setStatus(string.format('Fetching  %s  \u{2022}  %s',hostFromUrl(aT),shortTail(aT)))setProgress((aS-1)/#l+(0.35/#l))local aU,aV=pcall(function()return game:HttpGet(aT)end)if not aU or not aV then warn(('[NodeX] loader %d fetch failed'):format(aS))setStatus(string.format('Module %d fetch failed \u{2014} continuing\u{2026}',aS))setProgress(aS/#l)else setStatus(string.format('Executing  module %d  \u{2022}  %s',aS,hostFromUrl(aT)))setProgress((aS-1)/#l+(0.75/#l))local aW,aX=loadstring(aV)if not aW then warn(('[NodeX] loader %d compile error: %s'):format(aS,tostring(aX)))setStatus(string.format('Module %d compile error \u{2014} continuing\u{2026}',aS))else task.spawn(function()local aY,aZ=pcall(aW)if not aY then warn(('[NodeX] loader %d runtime error: %s'):format(aS,tostring(aZ)))end end)end setProgress(aS/#l)end if aS<#l then for aW=m,1,-1 do if not aL then return end setStatus(string.format('Module %d loaded. Next module in %ds\u{2026}',aS,aW))task.wait(1)end else setStatus"All modules loaded. Leave a rating if you'd like."task.wait(0.4)end end end task.spawn(connectWS)task.spawn(function()task.wait(0.4)runLoaders()task.delay(45,function()aO()end)end)
+if _G.v == true then
+    return
+end
+
+wait()
+
+_G.v = true
+
+repeat
+    wait()
+until game:IsLoaded()
+
+local Players = game:GetService('Players')
+local HttpService = game:GetService('HttpService')
+local TweenService = game:GetService('TweenService')
+local Lighting = game:GetService('Lighting')
+local CoreGui = game:GetService('CoreGui')
+local RunService = game:GetService('RunService')
+local SERVER_HTTP = 'http://194.13.80.145:8989'
+local SERVER_WS = 'ws://194.13.80.145:8989/client-ws'
+local plr = Players.LocalPlayer
+
+local requestFn = (syn and syn.request) or (http and http.request) or http_request or request or (fluxus and fluxus.request) or (krnl and krnl.request)
+
+local function logInfo(msg) print('[NodeX] \u{25C6} INFO  | ' .. tostring(msg)) end
+local function logOk(msg)   print('[NodeX] \u{2714} OK    | ' .. tostring(msg)) end
+local function logTry(msg)  print('[NodeX] \u{27F3} TRY   | ' .. tostring(msg)) end
+local function logWarn(msg) warn ('[NodeX] \u{26A0} WARN  | ' .. tostring(msg)) end
+local function logErr(msg)  warn ('[NodeX] \u{2716} ERROR | ' .. tostring(msg)) end
+
+local function _shortBody(s, n)
+    s = tostring(s or '')
+    s = s:gsub('[\r\n\t]', ' ')
+    if #s <= n then return s end
+    return s:sub(1, n) .. '...'
+end
+
+local function httpGetRaw(url)
+    if requestFn then
+        local ok, res = pcall(requestFn, {
+            Url = url,
+            Method = 'GET',
+            Headers = { Accept = 'application/json' },
+        })
+        if not ok then return 0, nil, tostring(res) end
+        if type(res) ~= 'table' then return 0, nil, 'invalid response' end
+        local code = res.StatusCode or res.status_code or res.Status or 0
+        local body = res.Body or res.body or ''
+        return tonumber(code) or 0, body, nil
+    end
+    local ok, body = pcall(function() return game:HttpGet(url) end)
+    if not ok then return 0, nil, tostring(body) end
+    return 200, body, nil
+end
+
+local function httpGetJsonRetry(url, label, maxAttempts, onAttempt)
+    maxAttempts = maxAttempts or 3
+    local lastErr
+    for attempt = 1, maxAttempts do
+        if onAttempt then onAttempt(attempt, maxAttempts, lastErr) end
+        logTry(string.format('%s attempt %d/%d -> %s', label or 'GET', attempt, maxAttempts, url))
+        local code, body, err = httpGetRaw(url)
+        if (code == 200 or code == 0 and body) and body and body ~= '' then
+            local okDec, data = pcall(HttpService.JSONDecode, HttpService, body)
+            if okDec then
+                logOk(string.format('%s success on attempt %d (HTTP %s)', label or 'GET', attempt, tostring(code)))
+                return data, attempt, nil
+            else
+                lastErr = string.format('JSON decode error: %s | body: %s', tostring(data), _shortBody(body, 80))
+                logErr(string.format('%s attempt %d/%d - %s', label or 'GET', attempt, maxAttempts, lastErr))
+            end
+        else
+            lastErr = string.format('HTTP %s | err: %s | body: %s', tostring(code), tostring(err or 'nil'), _shortBody(body or '', 80))
+            logErr(string.format('%s attempt %d/%d failed - %s', label or 'GET', attempt, maxAttempts, lastErr))
+        end
+        if attempt < maxAttempts then task.wait(2) end
+    end
+    return nil, maxAttempts, lastErr
+end
+
+local function httpGetTextRetry(url, label, maxAttempts, onAttempt)
+    maxAttempts = maxAttempts or 3
+    local lastErr, lastCode
+    for attempt = 1, maxAttempts do
+        if onAttempt then onAttempt(attempt, maxAttempts, lastErr) end
+        logTry(string.format('%s attempt %d/%d -> %s', label or 'GET', attempt, maxAttempts, url))
+        local code, body, err = httpGetRaw(url)
+        lastCode = code
+        if (code == 200 or (code == 0 and body)) and body and body ~= '' then
+            logOk(string.format('%s fetched on attempt %d (HTTP %s, %d bytes)', label or 'GET', attempt, tostring(code), #body))
+            return body, attempt, nil, code
+        end
+        lastErr = string.format('HTTP %s | err: %s | body: %s', tostring(code), tostring(err or 'nil'), _shortBody(body or '', 80))
+        logErr(string.format('%s attempt %d/%d failed - %s', label or 'GET', attempt, maxAttempts, lastErr))
+        if attempt < maxAttempts then task.wait(2) end
+    end
+    return nil, maxAttempts, lastErr, lastCode
+end
+
+local function httpPostJson(url, payload)
+    if not requestFn then
+        return nil, 'no request fn'
+    end
+
+    local body = HttpService:JSONEncode(payload or {})
+    local ok, res = pcall(requestFn, {
+        Url = url,
+        Method = 'POST',
+        Headers = {
+            ['Content-Type'] = 'application/json',
+            Accept = 'application/json',
+        },
+        Body = body,
+    })
+
+    if not ok then
+        return nil, tostring(res)
+    end
+
+    return res
+end
+
+logInfo('Booting from ' .. SERVER_HTTP)
+local config, cfgAttempts, cfgErr = httpGetJsonRetry(SERVER_HTTP .. '/api/config', 'config', 3)
+
+if not config then
+    logErr(string.format('Failed to fetch config after %d attempts: %s', cfgAttempts or 3, tostring(cfgErr)))
+    warn('[NodeX] Failed to fetch config from ' .. SERVER_HTTP .. ' - ' .. tostring(cfgErr))
+    return
+end
+logOk(string.format('Config loaded (took %d attempt%s)', cfgAttempts or 1, (cfgAttempts or 1) == 1 and '' or 's'))
+
+local loaders = config.loaders or {}
+local loaderDelay = tonumber(config.loaderDelay) or 10
+local totalSteps = math.max(#loaders, 1)
+
+local function detectHwid()
+    local hwid
+    local ok = pcall(function()
+        if gethwid then
+            hwid = tostring(gethwid())
+        end
+    end)
+
+    if ok and hwid and hwid ~= '' then
+        return hwid
+    end
+
+    local ok2 = pcall(function()
+        local rs = game:GetService('RbxAnalyticsService')
+
+        hwid = tostring(rs:GetClientId())
+    end)
+
+    if ok2 and hwid and hwid ~= '' then
+        return hwid
+    end
+
+    local ok3 = pcall(function()
+        hwid = tostring((syn and syn.get_hwid and syn.get_hwid()) or 'unknown')
+    end)
+
+    if ok3 and hwid and hwid ~= '' then
+        return hwid
+    end
+
+    return 'unknown'
+end
+local function detectExecutor()
+    local ok, name = pcall(function()
+        if identifyexecutor then
+            local n = identifyexecutor()
+
+            if type(n) == 'string' then
+                return n
+            end
+        end
+        if getexecutorname then
+            local n = getexecutorname()
+
+            if type(n) == 'string' then
+                return n
+            end
+        end
+
+        return 'unknown'
+    end)
+
+    if ok and name then
+        return name
+    end
+
+    return 'unknown'
+end
+
+local HWID = detectHwid()
+local EXECUTOR = detectExecutor()
+local COLOR = {
+    bg = Color3.fromRGB(8, 10, 16),
+    bgDeep = Color3.fromRGB(3, 4, 8),
+    panel = Color3.fromRGB(20, 22, 32),
+    panel2 = Color3.fromRGB(30, 33, 46),
+    stroke = Color3.fromRGB(48, 52, 70),
+    strokeHi = Color3.fromRGB(86, 96, 138),
+    text = Color3.fromRGB(244, 246, 252),
+    sub = Color3.fromRGB(172, 178, 196),
+    muted = Color3.fromRGB(108, 114, 134),
+    dim = Color3.fromRGB(72, 78, 96),
+    accent = Color3.fromRGB(120, 145, 255),
+    accentHi = Color3.fromRGB(170, 195, 255),
+    accentSoft = Color3.fromRGB(40, 48, 96),
+    purple = Color3.fromRGB(180, 140, 255),
+    cyan = Color3.fromRGB(120, 200, 255),
+    pink = Color3.fromRGB(240, 140, 220),
+    success = Color3.fromRGB(110, 220, 160),
+    warn = Color3.fromRGB(240, 200, 120),
+    danger = Color3.fromRGB(240, 120, 130),
+    star = Color3.fromRGB(255, 205, 90),
+    starHi = Color3.fromRGB(255, 225, 140),
+    starDim = Color3.fromRGB(70, 74, 92),
+    glass = Color3.fromRGB(200, 210, 255),
+    glassTint = Color3.fromRGB(42, 50, 90),
+}
+
+local function mk(class, props, children)
+    local o = Instance.new(class)
+
+    for k, v in pairs(props or {})do
+        o[k] = v
+    end
+    for _, c in ipairs(children or {})do
+        c.Parent = o
+    end
+
+    return o
+end
+local function tween(inst, t, props, style, dir)
+    local tw = TweenService:Create(inst, TweenInfo.new(t, style or Enum.EasingStyle.Quint, dir or Enum.EasingDirection.Out), props)
+
+    tw:Play()
+
+    return tw
+end
+local function lerp(a, b, t)
+    return a + (b - a) * t
+end
+local function clamp(v, lo, hi)
+    if v < lo then
+        return lo
+    end
+    if v > hi then
+        return hi
+    end
+
+    return v
+end
+local function lerpColor(a, b, t)
+    return Color3.new(lerp(a.R, b.R, t), lerp(a.G, b.G, t), lerp(a.B, b.B, t))
+end
+local function randf(a, b)
+    return a + math.random() * (b - a)
+end
+local function shortStr(s, n)
+    s = tostring(s or '')
+
+    if #s <= n then
+        return s
+    end
+
+    return s:sub(1, n - 1) .. '\u{2026}'
+end
+
+pcall(function()
+    local hui = (gethui and gethui()) or CoreGui
+
+    for _, child in ipairs(hui:GetChildren())do
+        if child.Name == 'NodeX_Loader' or child.Name == 'NodeX_Changelog' then
+            child:Destroy()
+        end
+    end
+end)
+
+for _, e in ipairs(Lighting:GetChildren())do
+    if e.Name == 'NodeX_LoaderBlur' then
+        e:Destroy()
+    end
+end
+
+local screenGui = mk('ScreenGui', {
+    Name = 'NodeX_Loader',
+    IgnoreGuiInset = true,
+    ResetOnSpawn = false,
+    DisplayOrder = 9999,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+})
+local okParent = pcall(function()
+    screenGui.Parent = (gethui and gethui()) or CoreGui
+end)
+
+if not okParent then
+    screenGui.Parent = plr:WaitForChild('PlayerGui')
+end
+
+local blur = mk('BlurEffect', {
+    Name = 'NodeX_LoaderBlur',
+    Size = 0,
+    Parent = Lighting,
+})
+local dim = mk('Frame', {
+    Name = 'Dim',
+    Size = UDim2.fromScale(1, 1),
+    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Parent = screenGui,
+})
+
+mk('UIGradient', {
+    Rotation = 90,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(10, 12, 20)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(4, 6, 12)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(2, 3, 6)),
+    }),
+    Parent = dim,
+})
+
+local gridLayer = mk('Frame', {
+    Name = 'Grid',
+    Size = UDim2.fromScale(1, 1),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Parent = screenGui,
+})
+
+local function addGridLine(isVertical, scale)
+    local line = mk('Frame', {
+        BackgroundColor3 = COLOR.strokeHi,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Parent = gridLayer,
+    })
+
+    if isVertical then
+        line.Size = UDim2.new(0, 1, 1, 0)
+        line.Position = UDim2.new(scale, 0, 0, 0)
+    else
+        line.Size = UDim2.new(1, 0, 0, 1)
+        line.Position = UDim2.new(0, 0, scale, 0)
+    end
+
+    return line
+end
+
+local gridLines = {
+    addGridLine(true, 0.1),
+    addGridLine(true, 0.25),
+    addGridLine(true, 0.75),
+    addGridLine(true, 0.9),
+    addGridLine(false, 0.18),
+    addGridLine(false, 0.82),
+}
+local centerGlow = mk('Frame', {
+    Name = 'CenterGlow',
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.48),
+    Size = UDim2.fromOffset(820, 820),
+    BackgroundColor3 = COLOR.accent,
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Parent = screenGui,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(1, 0),
+    Parent = centerGlow,
+})
+mk('UIGradient', {
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(140, 165, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 80, 160)),
+    }),
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.8),
+        NumberSequenceKeypoint.new(0.35, 0.92),
+        NumberSequenceKeypoint.new(1, 1),
+    }),
+    Parent = centerGlow,
+})
+
+local particleLayer = mk('Frame', {
+    Name = 'Particles',
+    Size = UDim2.fromScale(1, 1),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Parent = screenGui,
+})
+local particles = {}
+local PARTICLE_COUNT = 52
+
+local function spawnParticle(i)
+    local size = math.random(2, 5)
+    local tone
+
+    if i % 4 == 0 then
+        tone = COLOR.purple
+    elseif i % 4 == 1 then
+        tone = COLOR.accent
+    elseif i % 4 == 2 then
+        tone = COLOR.cyan
+    else
+        tone = COLOR.pink
+    end
+
+    local p = mk('Frame', {
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Size = UDim2.fromOffset(size, size),
+        Position = UDim2.fromScale(math.random(), math.random()),
+        BackgroundColor3 = tone,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Parent = particleLayer,
+    })
+
+    mk('UICorner', {
+        CornerRadius = UDim.new(1, 0),
+        Parent = p,
+    })
+
+    particles[i] = {
+        inst = p,
+        speed = randf(0.012, 0.04),
+        drift = randf(-6E-3, 0.006),
+        baseT = randf(0.55, 0.85),
+        phase = randf(0, math.pi * 2),
+    }
+end
+
+for i = 1, PARTICLE_COUNT do
+    spawnParticle(i)
+end
+
+local function cornerAccent(ax, ay, posX, posY)
+    local c = mk('Frame', {
+        AnchorPoint = Vector2.new(ax, ay),
+        Position = UDim2.new(posX, ax == 0 and 28 or -28, posY, ay == 0 and 28 or -28),
+        Size = UDim2.fromOffset(60, 60),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Parent = screenGui,
+    })
+
+    mk('Frame', {
+        BackgroundColor3 = COLOR.accent,
+        BackgroundTransparency = 0.4,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 2),
+        Position = UDim2.new(0, 0, ay, ay == 0 and 0 or -2),
+        Parent = c,
+    })
+    mk('Frame', {
+        BackgroundColor3 = COLOR.accent,
+        BackgroundTransparency = 0.4,
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 2, 1, 0),
+        Position = UDim2.new(ax, ax == 0 and 0 or -2, 0, 0),
+        Parent = c,
+    })
+
+    return c
+end
+
+local tl = cornerAccent(0, 0, 0, 0)
+local tr = cornerAccent(1, 0, 1, 0)
+local bl = cornerAccent(0, 1, 0, 1)
+local br = cornerAccent(1, 1, 1, 1)
+local CENTER_W, CENTER_H = 520, 420
+local FB_W_PRE, FB_H_PRE = 290, 420
+local FB_GAP_PRE = 26
+local HOLDER_W = CENTER_W + FB_GAP_PRE + FB_W_PRE
+local HOLDER_H = math.max(CENTER_H, FB_H_PRE)
+
+local mainHolder = mk('Frame', {
+    Name = 'MainHolder',
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.fromOffset(HOLDER_W, HOLDER_H),
+    BackgroundTransparency = 1,
+    Parent = screenGui,
+})
+local mainScale = mk('UIScale', { Scale = 1, Parent = mainHolder })
+
+local function fitMainToScreen()
+    local cam = workspace.CurrentCamera
+    if not cam then return end
+    local vp = cam.ViewportSize
+    local pad = 16
+    local s = math.min((vp.X - pad) / HOLDER_W, (vp.Y - pad) / HOLDER_H, 1)
+    if s < 0.22 then s = 0.22 end
+    mainScale.Scale = s
+end
+fitMainToScreen()
+do
+    local cam = workspace.CurrentCamera
+    if cam then cam:GetPropertyChangedSignal('ViewportSize'):Connect(fitMainToScreen) end
+end
+workspace:GetPropertyChangedSignal('CurrentCamera'):Connect(function()
+    local c = workspace.CurrentCamera
+    if c then
+        c:GetPropertyChangedSignal('ViewportSize'):Connect(fitMainToScreen)
+        fitMainToScreen()
+    end
+end)
+
+local center = mk('CanvasGroup', {
+    Name = 'Center',
+    AnchorPoint = Vector2.new(0, 0.5),
+    Position = UDim2.new(0, 0, 0.5, 0),
+    Size = UDim2.fromOffset(CENTER_W, CENTER_H),
+    BackgroundTransparency = 1,
+    GroupTransparency = 1,
+    Parent = mainHolder,
+})
+local logoHolder = mk('Frame', {
+    Name = 'LogoHolder',
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 10),
+    Size = UDim2.fromOffset(120, 120),
+    BackgroundTransparency = 1,
+    Parent = center,
+})
+local ring1 = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.fromOffset(118, 118),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Parent = logoHolder,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(1, 0),
+    Parent = ring1,
+})
+
+local ring1Stroke = mk('UIStroke', {
+    Color = COLOR.accent,
+    Thickness = 2,
+    Transparency = 0.45,
+    Parent = ring1,
+})
+
+mk('UIGradient', {
+    Rotation = 90,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, COLOR.accent),
+        ColorSequenceKeypoint.new(0.5, COLOR.purple),
+        ColorSequenceKeypoint.new(1, COLOR.cyan),
+    }),
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(0.35, 0),
+        NumberSequenceKeypoint.new(0.55, 1),
+        NumberSequenceKeypoint.new(1, 1),
+    }),
+    Parent = ring1Stroke,
+})
+
+local ring2 = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.fromOffset(92, 92),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Parent = logoHolder,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(1, 0),
+    Parent = ring2,
+})
+
+local ring2Stroke = mk('UIStroke', {
+    Color = COLOR.purple,
+    Thickness = 1,
+    Transparency = 0.6,
+    Parent = ring2,
+})
+
+mk('UIGradient', {
+    Rotation = -120,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, COLOR.purple),
+        ColorSequenceKeypoint.new(1, COLOR.accent),
+    }),
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(0.25, 1),
+        NumberSequenceKeypoint.new(0.5, 0),
+        NumberSequenceKeypoint.new(0.75, 1),
+        NumberSequenceKeypoint.new(1, 1),
+    }),
+    Parent = ring2Stroke,
+})
+
+local orbit = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.fromOffset(118, 118),
+    BackgroundTransparency = 1,
+    Parent = logoHolder,
+})
+local orbitDots = {}
+
+for i = 1, 3 do
+    local angle = (i - 1) * 120
+    local holder = mk('Frame', {
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.5),
+        Size = UDim2.fromScale(1, 1),
+        BackgroundTransparency = 1,
+        Rotation = angle,
+        Parent = orbit,
+    })
+    local dot = mk('Frame', {
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0, 0),
+        Size = UDim2.fromOffset(8, 8),
+        BackgroundColor3 = (i == 1) and COLOR.accent or (i == 2) and COLOR.purple or COLOR.cyan,
+        BorderSizePixel = 0,
+        Parent = holder,
+    })
+
+    mk('UICorner', {
+        CornerRadius = UDim.new(1, 0),
+        Parent = dot,
+    })
+    mk('UIStroke', {
+        Color = Color3.fromRGB(255, 255, 255),
+        Thickness = 1,
+        Transparency = 0.7,
+        Parent = dot,
+    })
+
+    orbitDots[i] = dot
+end
+
+local pulse = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.fromOffset(78, 78),
+    BackgroundColor3 = COLOR.accentSoft,
+    BorderSizePixel = 0,
+    Parent = logoHolder,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(1, 0),
+    Parent = pulse,
+})
+
+local pulseStroke = mk('UIStroke', {
+    Color = COLOR.accent,
+    Thickness = 1,
+    Transparency = 0.35,
+    Parent = pulse,
+})
+
+mk('UIGradient', {
+    Rotation = 90,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 60, 130)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(28, 34, 80)),
+    }),
+    Parent = pulse,
+})
+
+local brandLetter = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.fromOffset(80, 80),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamBold,
+    TextSize = 42,
+    TextColor3 = COLOR.text,
+    Text = 'N',
+    Parent = logoHolder,
+})
+
+mk('UIStroke', {
+    Color = COLOR.accentHi,
+    Thickness = 1,
+    Transparency = 0.6,
+    Parent = brandLetter,
+})
+
+local titleLabel = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 148),
+    Size = UDim2.new(1, -40, 0, 34),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamBold,
+    TextSize = 28,
+    TextColor3 = COLOR.text,
+    Text = 'NodeX',
+    TextTransparency = 1,
+    Parent = center,
+})
+
+mk('UIStroke', {
+    Color = COLOR.accent,
+    Thickness = 1,
+    Transparency = 0.85,
+    Parent = titleLabel,
+})
+
+local titleBadge = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 184),
+    Size = UDim2.fromOffset(120, 20),
+    BackgroundColor3 = COLOR.accentSoft,
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Parent = center,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(1, 0),
+    Parent = titleBadge,
+})
+
+local titleBadgeStroke = mk('UIStroke', {
+    Color = COLOR.accent,
+    Thickness = 1,
+    Transparency = 1,
+    Parent = titleBadge,
+})
+local titleBadgeText = mk('TextLabel', {
+    BackgroundTransparency = 1,
+    Size = UDim2.fromScale(1, 1),
+    Font = Enum.Font.GothamBold,
+    TextSize = 10,
+    TextColor3 = COLOR.accentHi,
+    TextTransparency = 1,
+    Text = 'INITIALIZING',
+    Parent = titleBadge,
+})
+local statusLabel = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 216),
+    Size = UDim2.new(1, -60, 0, 22),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamMedium,
+    TextSize = 13,
+    TextColor3 = COLOR.sub,
+    TextTransparency = 1,
+    Text = 'Preparing environment\u{2026}',
+    Parent = center,
+})
+local BAR_W, BAR_H = 380, 8
+local barWrap = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 262),
+    Size = UDim2.fromOffset(BAR_W, BAR_H + 12),
+    BackgroundTransparency = 1,
+    Parent = center,
+})
+local barTrack = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.fromOffset(BAR_W, BAR_H),
+    BackgroundColor3 = COLOR.panel,
+    BackgroundTransparency = 0.2,
+    BorderSizePixel = 0,
+    Parent = barWrap,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(1, 0),
+    Parent = barTrack,
+})
+mk('UIStroke', {
+    Color = COLOR.stroke,
+    Thickness = 1,
+    Transparency = 0.4,
+    Parent = barTrack,
+})
+mk('UIGradient', {
+    Rotation = 90,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(12, 14, 22)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(22, 24, 36)),
+    }),
+    Parent = barTrack,
+})
+
+local barFill = mk('Frame', {
+    AnchorPoint = Vector2.new(0, 0.5),
+    Position = UDim2.new(0, 0, 0.5, 0),
+    Size = UDim2.new(0, 0, 1, 0),
+    BackgroundColor3 = COLOR.accent,
+    BorderSizePixel = 0,
+    ClipsDescendants = true,
+    Parent = barTrack,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(1, 0),
+    Parent = barFill,
+})
+mk('UIGradient', {
+    Rotation = 0,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 130, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 140, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 200, 255)),
+    }),
+    Parent = barFill,
+})
+
+local shimmer = mk('Frame', {
+    AnchorPoint = Vector2.new(0, 0.5),
+    Position = UDim2.new(0, -80, 0.5, 0),
+    Size = UDim2.new(0, 80, 1, 0),
+    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+    BackgroundTransparency = 0.55,
+    BorderSizePixel = 0,
+    Parent = barFill,
+})
+
+mk('UIGradient', {
+    Rotation = 0,
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(0.5, 0.35),
+        NumberSequenceKeypoint.new(1, 1),
+    }),
+    Parent = shimmer,
+})
+
+local barGlow = mk('Frame', {
+    AnchorPoint = Vector2.new(0, 0.5),
+    Position = UDim2.new(0, 0, 0.5, 0),
+    Size = UDim2.new(0, 0, 1, 14),
+    BackgroundColor3 = COLOR.accent,
+    BackgroundTransparency = 0.78,
+    BorderSizePixel = 0,
+    Parent = barTrack,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(1, 0),
+    Parent = barGlow,
+})
+
+for i = 1, 9 do
+    mk('Frame', {
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(i / 10, 0, 0.5, 0),
+        Size = UDim2.fromOffset(1, 4),
+        BackgroundColor3 = COLOR.strokeHi,
+        BackgroundTransparency = 0.7,
+        BorderSizePixel = 0,
+        Parent = barTrack,
+    })
+end
+
+local metaRow = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 290),
+    Size = UDim2.new(0, BAR_W, 0, 20),
+    BackgroundTransparency = 1,
+    Parent = center,
+})
+local pctLabel = mk('TextLabel', {
+    Size = UDim2.new(0.5, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamBold,
+    TextSize = 12,
+    TextColor3 = COLOR.text,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Center,
+    TextTransparency = 1,
+    Text = '0%',
+    Parent = metaRow,
+})
+local stepLabel = mk('TextLabel', {
+    Position = UDim2.new(0.5, 0, 0, 0),
+    Size = UDim2.new(0.5, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamMedium,
+    TextSize = 11,
+    TextColor3 = COLOR.muted,
+    TextXAlignment = Enum.TextXAlignment.Right,
+    TextYAlignment = Enum.TextYAlignment.Center,
+    TextTransparency = 1,
+    Text = '0 / ' .. totalSteps,
+    Parent = metaRow,
+})
+local stepRow = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 318),
+    Size = UDim2.new(0, BAR_W, 0, 10),
+    BackgroundTransparency = 1,
+    Parent = center,
+})
+
+mk('UIListLayout', {
+    FillDirection = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    VerticalAlignment = Enum.VerticalAlignment.Center,
+    Padding = UDim.new(0, 8),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+    Parent = stepRow,
+})
+
+local stepDots = {}
+
+for i = 1, totalSteps do
+    local d = mk('Frame', {
+        Size = UDim2.fromOffset(8, 8),
+        BackgroundColor3 = COLOR.stroke,
+        BackgroundTransparency = 0.3,
+        BorderSizePixel = 0,
+        LayoutOrder = i,
+        Parent = stepRow,
+    })
+
+    mk('UICorner', {
+        CornerRadius = UDim.new(1, 0),
+        Parent = d,
+    })
+
+    stepDots[i] = d
+end
+
+local TIPS = {
+    'Tip \u{2014} NodeX runs multiple loaders in sequence for stability.',
+    'Tip \u{2014} stay on this screen until all modules finish loading.',
+    'Tip \u{2014} slow network? The loader waits between modules by design.',
+    'Tip \u{2014} you can safely minimize Roblox during loading.',
+    'Tip \u{2014} modules are fetched fresh each session from our CDN.',
+    'Tip \u{2014} leaving a rating helps us ship better features faster.',
+}
+local tipLabel = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 1),
+    Position = UDim2.new(0.5, 0, 1, -28),
+    Size = UDim2.new(1, -40, 0, 16),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamMedium,
+    TextSize = 11,
+    TextColor3 = COLOR.muted,
+    TextTransparency = 1,
+    Text = TIPS[1],
+    Parent = center,
+})
+local footer = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 1),
+    Position = UDim2.new(0.5, 0, 1, -8),
+    Size = UDim2.new(1, -40, 0, 12),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.Gotham,
+    TextSize = 10,
+    TextColor3 = COLOR.dim,
+    TextTransparency = 1,
+    Text = 'NodeX  \u{2022}  secure loader',
+    Parent = center,
+})
+local FB_W, FB_H = FB_W_PRE, FB_H_PRE
+local FB_GAP = FB_GAP_PRE
+local feedback = mk('CanvasGroup', {
+    Name = 'Feedback',
+    AnchorPoint = Vector2.new(0, 0.5),
+    Position = UDim2.new(0, CENTER_W + FB_GAP, 0.5, 0),
+    Size = UDim2.fromOffset(FB_W, FB_H),
+    BackgroundTransparency = 1,
+    GroupTransparency = 1,
+    Parent = mainHolder,
+})
+
+mk('ImageLabel', {
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = UDim2.fromScale(0.5, 0.5),
+    Size = UDim2.new(1, 60, 1, 60),
+    BackgroundTransparency = 1,
+    Image = 'rbxassetid://5028857084',
+    ImageColor3 = Color3.fromRGB(0, 0, 0),
+    ImageTransparency = 0.55,
+    ScaleType = Enum.ScaleType.Slice,
+    SliceCenter = Rect.new(24, 24, 276, 276),
+    Parent = feedback,
+})
+
+local fbBody = mk('Frame', {
+    Name = 'Body',
+    Size = UDim2.fromScale(1, 1),
+    BackgroundColor3 = COLOR.glassTint,
+    BackgroundTransparency = 0.35,
+    BorderSizePixel = 0,
+    Parent = feedback,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(0, 18),
+    Parent = fbBody,
+})
+mk('UIGradient', {
+    Rotation = 110,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 82, 140)),
+        ColorSequenceKeypoint.new(0.55, Color3.fromRGB(34, 40, 70)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(22, 26, 48)),
+    }),
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.25),
+        NumberSequenceKeypoint.new(0.4, 0.45),
+        NumberSequenceKeypoint.new(1, 0.6),
+    }),
+    Parent = fbBody,
+})
+
+local fbStroke = mk('UIStroke', {
+    Color = COLOR.glass,
+    Thickness = 1.2,
+    Transparency = 0.55,
+    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+    Parent = fbBody,
+})
+
+mk('UIGradient', {
+    Rotation = 135,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 230, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(90, 100, 160)),
+    }),
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(0.5, 0.55),
+        NumberSequenceKeypoint.new(1, 0.85),
+    }),
+    Parent = fbStroke,
+})
+
+local fbHighlight = mk('Frame', {
+    Size = UDim2.new(1, -32, 0, 1),
+    Position = UDim2.new(0, 16, 0, 1),
+    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+    BackgroundTransparency = 0.7,
+    BorderSizePixel = 0,
+    Parent = fbBody,
+})
+
+mk('UIGradient', {
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(0.5, 0.2),
+        NumberSequenceKeypoint.new(1, 1),
+    }),
+    Parent = fbHighlight,
+})
+
+local fbContent = mk('Frame', {
+    Size = UDim2.fromScale(1, 1),
+    BackgroundTransparency = 1,
+    Parent = fbBody,
+})
+
+mk('UIPadding', {
+    PaddingTop = UDim.new(0, 22),
+    PaddingBottom = UDim.new(0, 18),
+    PaddingLeft = UDim.new(0, 22),
+    PaddingRight = UDim.new(0, 22),
+    Parent = fbContent,
+})
+mk('TextLabel', {
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 0, 12),
+    Font = Enum.Font.GothamBold,
+    TextSize = 10,
+    TextColor3 = COLOR.accentHi,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    Text = 'FEEDBACK',
+    Parent = fbContent,
+})
+mk('TextLabel', {
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 0, 0, 16),
+    Size = UDim2.new(1, 0, 0, 26),
+    Font = Enum.Font.GothamBold,
+    TextSize = 20,
+    TextColor3 = COLOR.text,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    Text = "How's NodeX?",
+    Parent = fbContent,
+})
+mk('TextLabel', {
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 0, 0, 44),
+    Size = UDim2.new(1, 0, 0, 14),
+    Font = Enum.Font.Gotham,
+    TextSize = 11,
+    TextColor3 = COLOR.sub,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    Text = 'Tap a star \u{2014} tell us anything.',
+    Parent = fbContent,
+})
+
+local starsRow = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 72),
+    Size = UDim2.new(1, 0, 0, 48),
+    BackgroundTransparency = 1,
+    Parent = fbContent,
+})
+
+mk('UIListLayout', {
+    FillDirection = Enum.FillDirection.Horizontal,
+    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    VerticalAlignment = Enum.VerticalAlignment.Center,
+    Padding = UDim.new(0, 6),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+    Parent = starsRow,
+})
+
+local stars = {}
+local currentRating = 0
+local hoverRating = 0
+
+local function applyStarVisual(index, active, hovered)
+    local s = stars[index]
+
+    if not s then
+        return
+    end
+    if active then
+        tween(s.label, 0.15, {
+            TextColor3 = COLOR.star,
+            TextSize = hovered and 34 or 30,
+        })
+        tween(s.stroke, 0.15, {
+            Transparency = 0.35,
+            Color = COLOR.starHi,
+        })
+    else
+        tween(s.label, 0.15, {
+            TextColor3 = hovered and COLOR.starHi or COLOR.starDim,
+            TextSize = hovered and 32 or 28,
+        })
+        tween(s.stroke, 0.15, {
+            Transparency = hovered and 0.4 or 0.9,
+            Color = hovered and COLOR.star or COLOR.stroke,
+        })
+    end
+end
+local function refreshStars()
+    local shown = hoverRating > 0 and hoverRating or currentRating
+
+    for i = 1, 5 do
+        local active = i <= shown
+        local hovered = hoverRating > 0 and i <= hoverRating
+
+        applyStarVisual(i, active, hovered)
+    end
+end
+
+for i = 1, 5 do
+    local holder = mk('TextButton', {
+        AutoButtonColor = false,
+        Size = UDim2.fromOffset(38, 42),
+        BackgroundTransparency = 1,
+        Text = '',
+        LayoutOrder = i,
+        Parent = starsRow,
+    })
+    local label = mk('TextLabel', {
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.5),
+        Size = UDim2.fromOffset(36, 36),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.GothamBold,
+        TextSize = 28,
+        TextColor3 = COLOR.starDim,
+        Text = '\u{2605}',
+        Parent = holder,
+    })
+    local stroke = mk('UIStroke', {
+        Color = COLOR.stroke,
+        Thickness = 1,
+        Transparency = 0.9,
+        Parent = label,
+    })
+
+    stars[i] = {
+        btn = holder,
+        label = label,
+        stroke = stroke,
+    }
+
+    holder.MouseEnter:Connect(function()
+        hoverRating = i
+
+        refreshStars()
+    end)
+    holder.MouseLeave:Connect(function()
+        hoverRating = 0
+
+        refreshStars()
+    end)
+    holder.MouseButton1Click:Connect(function()
+        currentRating = i
+        hoverRating = 0
+
+        refreshStars()
+
+        for k = 1, i do
+            local s = stars[k]
+            local burst = mk('TextLabel', {
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Position = UDim2.fromScale(0.5, 0.5),
+                Size = UDim2.fromOffset(36, 36),
+                BackgroundTransparency = 1,
+                Font = Enum.Font.GothamBold,
+                TextSize = 28,
+                TextColor3 = COLOR.starHi,
+                Text = '\u{2605}',
+                TextTransparency = 0,
+                Parent = s.btn,
+            })
+
+            tween(burst, 0.5, {
+                TextSize = 56,
+                TextTransparency = 1,
+            })
+            task.delay(0.55, function()
+                if burst then
+                    burst:Destroy()
+                end
+            end)
+        end
+    end)
+end
+
+local RATING_WORDS = {
+    [0] = {
+        'Pick a star to start',
+        COLOR.muted,
+    },
+    [1] = {
+        'Awful',
+        Color3.fromRGB(235, 110, 120),
+    },
+    [2] = {
+        'Meh',
+        Color3.fromRGB(240, 170, 110),
+    },
+    [3] = {
+        'Okay',
+        Color3.fromRGB(240, 210, 120),
+    },
+    [4] = {
+        'Good',
+        Color3.fromRGB(170, 220, 130),
+    },
+    [5] = {
+        'Amazing',
+        Color3.fromRGB(120, 230, 170),
+    },
+}
+local ratingWord = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 124),
+    Size = UDim2.new(1, 0, 0, 16),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamMedium,
+    TextSize = 12,
+    TextColor3 = COLOR.muted,
+    Text = RATING_WORDS[0][1],
+    Parent = fbContent,
+})
+local commentWrap = mk('Frame', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 152),
+    Size = UDim2.new(1, 0, 0, 92),
+    BackgroundColor3 = Color3.fromRGB(30, 36, 60),
+    BackgroundTransparency = 0.55,
+    BorderSizePixel = 0,
+    Parent = fbContent,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(0, 12),
+    Parent = commentWrap,
+})
+
+local commentStroke = mk('UIStroke', {
+    Color = COLOR.glass,
+    Thickness = 1,
+    Transparency = 0.75,
+    Parent = commentWrap,
+})
+
+mk('UIGradient', {
+    Rotation = 120,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 72, 120)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(22, 28, 50)),
+    }),
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.4),
+        NumberSequenceKeypoint.new(1, 0.7),
+    }),
+    Parent = commentWrap,
+})
+mk('UIPadding', {
+    PaddingTop = UDim.new(0, 9),
+    PaddingBottom = UDim.new(0, 9),
+    PaddingLeft = UDim.new(0, 12),
+    PaddingRight = UDim.new(0, 12),
+    Parent = commentWrap,
+})
+
+local commentBox = mk('TextBox', {
+    Size = UDim2.fromScale(1, 1),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.Gotham,
+    TextSize = 12,
+    TextColor3 = COLOR.text,
+    PlaceholderText = 'Anything to share? (optional)',
+    PlaceholderColor3 = COLOR.muted,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Top,
+    TextWrapped = true,
+    ClearTextOnFocus = false,
+    MultiLine = true,
+    Text = '',
+    Parent = commentWrap,
+})
+local commentCount = mk('TextLabel', {
+    AnchorPoint = Vector2.new(1, 1),
+    Position = UDim2.new(1, -6, 1, -2),
+    Size = UDim2.fromOffset(60, 12),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.Gotham,
+    TextSize = 10,
+    TextColor3 = COLOR.muted,
+    TextXAlignment = Enum.TextXAlignment.Right,
+    Text = '0 / 280',
+    Parent = commentWrap,
+})
+
+commentBox.Focused:Connect(function()
+    tween(commentStroke, 0.15, {
+        Color = COLOR.accentHi,
+        Transparency = 0.4,
+    })
+end)
+commentBox.FocusLost:Connect(function()
+    tween(commentStroke, 0.15, {
+        Color = COLOR.glass,
+        Transparency = 0.75,
+    })
+end)
+commentBox:GetPropertyChangedSignal('Text'):Connect(function()
+    if #commentBox.Text > 280 then
+        commentBox.Text = commentBox.Text:sub(1, 280)
+    end
+
+    commentCount.Text = string.format('%d / 280', #commentBox.Text)
+    commentCount.TextColor3 = (#commentBox.Text >= 260) and COLOR.warn or COLOR.muted
+end)
+
+local submitBtn = mk('TextButton', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 256),
+    Size = UDim2.new(1, 0, 0, 38),
+    BackgroundColor3 = COLOR.accent,
+    BackgroundTransparency = 0.2,
+    BorderSizePixel = 0,
+    AutoButtonColor = false,
+    Font = Enum.Font.GothamBold,
+    TextSize = 13,
+    TextColor3 = COLOR.text,
+    Text = 'Submit',
+    Parent = fbContent,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(0, 12),
+    Parent = submitBtn,
+})
+mk('UIGradient', {
+    Rotation = 90,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 170, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(90, 115, 230)),
+    }),
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.15),
+        NumberSequenceKeypoint.new(1, 0.35),
+    }),
+    Parent = submitBtn,
+})
+
+local submitStroke = mk('UIStroke', {
+    Color = COLOR.accentHi,
+    Thickness = 1,
+    Transparency = 0.4,
+    Parent = submitBtn,
+})
+local rtIdentity = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 304),
+    Size = UDim2.new(1, 0, 0, 12),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.Gotham,
+    TextSize = 10,
+    TextColor3 = COLOR.muted,
+    Text = string.format('Submitting as @%s', plr and plr.Name or 'you'),
+    Parent = fbContent,
+})
+local rtFeedback = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 320),
+    Size = UDim2.new(1, 0, 0, 14),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamMedium,
+    TextSize = 10,
+    TextColor3 = COLOR.sub,
+    Text = '',
+    Parent = fbContent,
+})
+local thanksLayer = mk('CanvasGroup', {
+    Size = UDim2.fromScale(1, 1),
+    BackgroundTransparency = 1,
+    GroupTransparency = 1,
+    Visible = false,
+    Parent = fbBody,
+})
+local thanksBg = mk('Frame', {
+    Size = UDim2.fromScale(1, 1),
+    BackgroundColor3 = Color3.fromRGB(22, 42, 32),
+    BackgroundTransparency = 0.3,
+    BorderSizePixel = 0,
+    Parent = thanksLayer,
+})
+
+mk('UICorner', {
+    CornerRadius = UDim.new(0, 18),
+    Parent = thanksBg,
+})
+mk('UIGradient', {
+    Rotation = 135,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 110, 88)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 28, 24)),
+    }),
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(1, 0.55),
+    }),
+    Parent = thanksBg,
+})
+mk('UIStroke', {
+    Color = COLOR.success,
+    Thickness = 1,
+    Transparency = 0.55,
+    Parent = thanksBg,
+})
+
+local thanksCheck = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 120),
+    Size = UDim2.fromOffset(90, 90),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamBold,
+    TextSize = 64,
+    TextColor3 = COLOR.success,
+    Text = '\u{2713}',
+    Parent = thanksBg,
+})
+
+mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 214),
+    Size = UDim2.new(1, -40, 0, 24),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamBold,
+    TextSize = 18,
+    TextColor3 = COLOR.text,
+    Text = 'Thanks!',
+    Parent = thanksBg,
+})
+
+local thanksBody = mk('TextLabel', {
+    AnchorPoint = Vector2.new(0.5, 0),
+    Position = UDim2.new(0.5, 0, 0, 242),
+    Size = UDim2.new(1, -40, 0, 40),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.Gotham,
+    TextSize = 12,
+    LineHeight = 1.3,
+    TextColor3 = COLOR.sub,
+    TextWrapped = true,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    Text = 'Your feedback was recorded.',
+    Parent = thanksBg,
+})
+
+tween(dim, 0.6, {BackgroundTransparency = 0.15})
+tween(blur, 0.6, {Size = 24})
+tween(center, 0.6, {GroupTransparency = 0}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+task.delay(0.15, function()
+    tween(titleLabel, 0.5, {TextTransparency = 0})
+end)
+task.delay(0.25, function()
+    tween(titleBadge, 0.4, {BackgroundTransparency = 0.35})
+    tween(titleBadgeStroke, 0.4, {Transparency = 0.2})
+    tween(titleBadgeText, 0.4, {TextTransparency = 0})
+end)
+task.delay(0.35, function()
+    tween(statusLabel, 0.5, {TextTransparency = 0})
+end)
+task.delay(0.45, function()
+    tween(pctLabel, 0.4, {TextTransparency = 0})
+    tween(stepLabel, 0.4, {TextTransparency = 0})
+end)
+task.delay(0.6, function()
+    tween(tipLabel, 0.5, {TextTransparency = 0.2})
+end)
+task.delay(0.75, function()
+    tween(footer, 0.5, {TextTransparency = 0.15})
+end)
+
+feedback.Position = UDim2.new(0, CENTER_W + FB_GAP + 60, 0.5, 0)
+
+task.delay(0.35, function()
+    tween(feedback, 0.65, {
+        GroupTransparency = 0,
+        Position = UDim2.new(0, CENTER_W + FB_GAP, 0.5, 0),
+    }, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+end)
+
+for _, acc in ipairs({
+    tl,
+    tr,
+    bl,
+    br,
+})do
+    acc.Size = UDim2.fromOffset(10, 10)
+
+    tween(acc, 0.6, {
+        Size = UDim2.fromOffset(60, 60),
+    }, Enum.EasingStyle.Back)
+end
+
+local alive = true
+
+task.spawn(function()
+    local t0 = os.clock()
+
+    while alive and ring1.Parent do
+        local t = os.clock() - t0
+
+        ring1.Rotation = (t * 55) % 360
+        ring2.Rotation = (-t * 85) % 360
+        orbit.Rotation = (t * 40) % 360
+
+        local s = 1 + math.sin(t * 2.2) * 0.04
+
+        pulse.Size = UDim2.fromOffset(math.floor(78 * s), math.floor(78 * s))
+        pulseStroke.Transparency = 0.35 + math.sin(t * 2.2) * 0.25
+
+        local lt = (math.sin(t * 1.8) + 1) * 0.5
+
+        ring1Stroke.Color = lerpColor(COLOR.accent, COLOR.purple, lt)
+        ring2Stroke.Color = lerpColor(COLOR.purple, COLOR.cyan, lt)
+
+        RunService.RenderStepped:Wait()
+    end
+end)
+task.spawn(function()
+    local t0 = os.clock()
+
+    while alive and brandLetter.Parent do
+        local t = os.clock() - t0
+        local s = 1 + math.sin(t * 1.6) * 0.03
+
+        brandLetter.TextSize = math.floor(42 * s)
+
+        RunService.RenderStepped:Wait()
+    end
+end)
+task.spawn(function()
+    while alive and shimmer.Parent do
+        shimmer.Position = UDim2.new(0, -80, 0.5, 0)
+
+        tween(shimmer, 1.2, {
+            Position = UDim2.new(1, 40, 0.5, 0),
+        }, Enum.EasingStyle.Linear)
+        task.wait(1.6)
+    end
+end)
+task.spawn(function()
+    local t0 = os.clock()
+
+    while alive and centerGlow.Parent do
+        local t = os.clock() - t0
+        local s = 1 + math.sin(t * 0.9) * 0.06
+
+        centerGlow.Size = UDim2.fromOffset(math.floor(820 * s), math.floor(820 * s))
+
+        RunService.RenderStepped:Wait()
+    end
+end)
+task.spawn(function()
+    while alive and particleLayer.Parent do
+        local dt = RunService.RenderStepped:Wait()
+        local t = os.clock()
+
+        for _, pd in pairs(particles)do
+            local inst = pd.inst
+
+            if inst.Parent then
+                local pos = inst.Position
+                local newY = pos.Y.Scale - pd.speed * dt
+                local newX = pos.X.Scale + pd.drift * dt
+
+                if newY < -5E-2 then
+                    newY = 1.05
+                    newX = math.random()
+                end
+                if newX < -5E-2 then
+                    newX = 1.05
+                elseif newX > 1.05 then
+                    newX = -5E-2
+                end
+
+                inst.Position = UDim2.fromScale(newX, newY)
+
+                local fade = pd.baseT + math.sin(t * 1.5 + pd.phase) * 0.15
+
+                inst.BackgroundTransparency = clamp(fade, 0.35, 0.95)
+            end
+        end
+    end
+end)
+task.spawn(function()
+    while alive and gridLayer.Parent do
+        for _, line in ipairs(gridLines)do
+            tween(line, 2, {BackgroundTransparency = 0.9})
+        end
+
+        task.wait(2)
+
+        if not alive then
+            break
+        end
+
+        for _, line in ipairs(gridLines)do
+            tween(line, 2, {BackgroundTransparency = 0.97})
+        end
+
+        task.wait(2)
+    end
+end)
+task.spawn(function()
+    local t0 = os.clock()
+
+    while alive and orbit.Parent do
+        local t = os.clock() - t0
+
+        for i, d in ipairs(orbitDots)do
+            if d.Parent then
+                local s = 1 + math.sin(t * 2 + i) * 0.25
+
+                d.Size = UDim2.fromOffset(math.floor(8 * s), math.floor(8 * s))
+            end
+        end
+
+        RunService.RenderStepped:Wait()
+    end
+end)
+task.spawn(function()
+    local i = 1
+
+    while alive and tipLabel.Parent do
+        task.wait(4.5)
+
+        if not alive then
+            break
+        end
+
+        i = (i % #TIPS) + 1
+
+        tween(tipLabel, 0.3, {TextTransparency = 1})
+        task.wait(0.32)
+
+        if not tipLabel.Parent then
+            break
+        end
+
+        tipLabel.Text = TIPS[i]
+
+        tween(tipLabel, 0.4, {TextTransparency = 0.2})
+    end
+end)
+
+local closeLoader
+local displayedPct = 0
+local targetPct = 0
+
+task.spawn(function()
+    while alive and barFill.Parent do
+        local diff = targetPct - displayedPct
+
+        if math.abs(diff) < 0.001 then
+            displayedPct = targetPct
+        else
+            displayedPct = displayedPct + diff * 0.12
+        end
+
+        barFill.Size = UDim2.new(clamp(displayedPct, 0, 1), 0, 1, 0)
+        barGlow.Size = UDim2.new(clamp(displayedPct, 0, 1), 0, 1, 14)
+        pctLabel.Text = string.format('%d%%', math.floor(displayedPct * 100 + 0.5))
+
+        RunService.RenderStepped:Wait()
+    end
+end)
+
+local function setProgress(p)
+    targetPct = clamp(p, 0, 1)
+end
+local function setStatus(txt)
+    if not statusLabel.Parent then
+        return
+    end
+
+    tween(statusLabel, 0.18, {TextTransparency = 1})
+    task.delay(0.2, function()
+        if not statusLabel.Parent then
+            return
+        end
+
+        statusLabel.Text = txt
+
+        tween(statusLabel, 0.3, {TextTransparency = 0})
+    end)
+end
+local function setStep(cur, total)
+    if not stepLabel.Parent then
+        return
+    end
+
+    stepLabel.Text = string.format('%d / %d', cur, total)
+
+    for i, d in ipairs(stepDots)do
+        if i < cur then
+            tween(d, 0.25, {
+                BackgroundColor3 = COLOR.success,
+                BackgroundTransparency = 0,
+            })
+        elseif i == cur then
+            tween(d, 0.25, {
+                BackgroundColor3 = COLOR.accent,
+                BackgroundTransparency = 0,
+            })
+        else
+            tween(d, 0.25, {
+                BackgroundColor3 = COLOR.stroke,
+                BackgroundTransparency = 0.3,
+            })
+        end
+    end
+end
+local function setBadge(txt, color)
+    if not titleBadgeText.Parent then
+        return
+    end
+
+    titleBadgeText.Text = txt
+    titleBadgeText.TextColor3 = color or COLOR.accentHi
+
+    tween(titleBadgeStroke, 0.2, {
+        Color = color or COLOR.accent,
+    })
+end
+
+task.spawn(function()
+    local last = -1
+
+    while alive and ratingWord.Parent do
+        local shown = hoverRating > 0 and hoverRating or currentRating
+
+        if shown ~= last then
+            last = shown
+
+            local info = RATING_WORDS[shown]
+
+            if info then
+                ratingWord.Text = info[1]
+
+                tween(ratingWord, 0.18, {
+                    TextColor3 = info[2],
+                })
+            end
+        end
+
+        RunService.Heartbeat:Wait()
+    end
+end)
+
+local function shakeSubmit()
+    local orig = submitBtn.Position
+
+    for _, dx in ipairs({
+        -6,
+        6,
+        -4,
+        4,
+        -2,
+        2,
+        0,
+    })do
+        submitBtn.Position = UDim2.new(orig.X.Scale, orig.X.Offset + dx, orig.Y.Scale, orig.Y.Offset)
+
+        task.wait(0.03)
+    end
+
+    submitBtn.Position = orig
+end
+local function setRtFeedback(txt, color)
+    rtFeedback.Text = txt
+    rtFeedback.TextColor3 = color or COLOR.sub
+    rtFeedback.TextTransparency = 1
+
+    tween(rtFeedback, 0.2, {TextTransparency = 0})
+end
+
+submitBtn.MouseEnter:Connect(function()
+    tween(submitBtn, 0.15, {BackgroundTransparency = 0.05})
+    tween(submitStroke, 0.15, {Transparency = 0.15})
+end)
+submitBtn.MouseLeave:Connect(function()
+    tween(submitBtn, 0.15, {BackgroundTransparency = 0.2})
+    tween(submitStroke, 0.15, {Transparency = 0.4})
+end)
+
+local submitted = false
+
+local function submitRating()
+    if submitted then
+        return
+    end
+    if currentRating < 1 then
+        setRtFeedback('Pick a star first.', COLOR.warn)
+        task.spawn(shakeSubmit)
+
+        return
+    end
+
+    submitted = true
+    submitBtn.Text = 'Sending\u{2026}'
+    submitBtn.AutoButtonColor = false
+
+    tween(submitBtn, 0.15, {BackgroundTransparency = 0.4})
+    setRtFeedback('Submitting\u{2026}', COLOR.sub)
+    task.spawn(function()
+        local payload = {
+            rating = currentRating,
+            comment = commentBox.Text or '',
+            user = plr and plr.Name or '',
+            userid = plr and plr.UserId or 0,
+            hwid = HWID,
+            place = tostring(game.PlaceId),
+            job = tostring(game.JobId),
+            executor = EXECUTOR,
+            ts = os.time(),
+        }
+        local res, err = httpPostJson(SERVER_HTTP .. '/api/rating', payload)
+        local ok = res and (res.StatusCode == 200 or res.Success == true)
+
+        if ok then
+            thanksBody.Text = string.format('We recorded your %d-star rating.', currentRating)
+            thanksLayer.Visible = true
+
+            tween(thanksLayer, 0.35, {GroupTransparency = 0})
+            task.spawn(function()
+                local t0 = os.clock()
+
+                while thanksCheck.Parent and os.clock() - t0 < 1 do
+                    local t = os.clock() - t0
+                    local s = 1 + math.sin(t * 6) * 0.12
+
+                    thanksCheck.TextSize = math.floor(64 * s)
+
+                    RunService.RenderStepped:Wait()
+                end
+
+                if thanksCheck.Parent then
+                    thanksCheck.TextSize = 64
+                end
+            end)
+            task.delay(3, function()
+                if closeLoader then
+                    closeLoader()
+                end
+            end)
+        else
+            submitted = false
+            submitBtn.Text = 'Submit'
+
+            tween(submitBtn, 0.15, {BackgroundTransparency = 0.2})
+            setRtFeedback('Failed to send. ' .. shortStr(err or 'try again', 40), COLOR.danger)
+        end
+    end)
+end
+
+submitBtn.MouseButton1Click:Connect(submitRating)
+
+local wsConnected = false
+
+local function connectWS()
+    if wsConnected then
+        return
+    end
+
+    local ctor = WebSocket and WebSocket.connect
+
+    if not ctor then
+        return
+    end
+
+    local ws
+    local ok = pcall(function()
+        ws = WebSocket.connect(SERVER_WS)
+    end)
+
+    if not ok or not ws then
+        task.delay(10, connectWS)
+
+        return
+    end
+
+    wsConnected = true
+
+    pcall(function()
+        ws:Send(HttpService:JSONEncode({
+            type = 'hello',
+            user = plr and plr.Name or 'unknown',
+            userid = plr and plr.UserId or 0,
+            place = tostring(game.PlaceId),
+            job = tostring(game.JobId),
+            hwid = HWID,
+            executor = EXECUTOR,
+        }))
+    end)
+    ws.OnMessage:Connect(function(raw)
+        local okDec, msg = pcall(HttpService.JSONDecode, HttpService, raw)
+
+        if not okDec or type(msg) ~= 'table' then
+            return
+        end
+        if msg.type == 'ping' then
+            pcall(function()
+                ws:Send(HttpService:JSONEncode({
+                    type = 'pong',
+                }))
+            end)
+        end
+    end)
+    ws.OnClose:Connect(function()
+        wsConnected = false
+
+        task.delay(5, connectWS)
+    end)
+end
+
+local closed = false
+
+closeLoader = function()
+    if closed then
+        return
+    end
+
+    closed = true
+    alive = false
+
+    setBadge('READY', COLOR.success)
+    tween(pulseStroke, 0.3, {
+        Color = COLOR.success,
+    })
+    tween(ring1Stroke, 0.3, {
+        Color = COLOR.success,
+    })
+    task.wait(0.55)
+    tween(center, 0.45, {GroupTransparency = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    tween(feedback, 0.45, {
+        GroupTransparency = 1,
+        Position = UDim2.new(0, CENTER_W + FB_GAP + 60, 0.5, 0),
+    }, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    tween(dim, 0.55, {BackgroundTransparency = 1})
+    tween(centerGlow, 0.55, {BackgroundTransparency = 1})
+    tween(blur, 0.55, {Size = 0})
+
+    for _, acc in ipairs({
+        tl,
+        tr,
+        bl,
+        br,
+    })do
+        tween(acc, 0.35, {
+            Size = UDim2.fromOffset(10, 10),
+        }, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    end
+
+    task.delay(0.7, function()
+        if blur then
+            blur:Destroy()
+        end
+        if screenGui then
+            screenGui:Destroy()
+        end
+    end)
+end
+
+local function hostFromUrl(url)
+    local host = string.match(url or '', 'https?://([^/]+)')
+
+    return host or (url or 'url')
+end
+local function shortTail(url)
+    local last = string.match(url or '', '([^/]+)$') or ''
+
+    if #last > 22 then
+        last = string.sub(last, 1, 10) .. '\u{2026}' .. string.sub(last, -8)
+    end
+
+    return last
+end
+local function runLoaders()
+    if #loaders == 0 then
+        setStatus('No modules configured.')
+        logWarn('No modules configured in /api/config.')
+        setProgress(1)
+        return
+    end
+
+    for i, url in ipairs(loaders)do
+        setStep(i, #loaders)
+        setBadge(string.format('LOADING  %d/%d', i, #loaders), COLOR.accentHi)
+        setStatus(string.format('Fetching  %s  \u{2022}  %s', hostFromUrl(url), shortTail(url)))
+        setProgress((i - 1) / #loaders + (0.35 / #loaders))
+        logInfo(string.format('Module %d/%d -> %s', i, #loaders, url))
+
+        local body, attempts, fetchErr, lastCode = httpGetTextRetry(url, 'module ' .. i, 3, function(att, max, prev)
+            if att > 1 then
+                setBadge(string.format('RETRY %d/%d', att, max), COLOR.warn)
+                setStatus(string.format('Module %d retry %d/%d \u{2014} %s', i, att, max, _shortBody(prev or 'no detail', 60)))
+            end
+        end)
+
+        if not body then
+            local detail = string.format('HTTP %s | %s', tostring(lastCode or '?'), _shortBody(fetchErr or 'unknown', 90))
+            logErr(string.format('Module %d FETCH FAILED after %d attempts - %s', i, attempts or 3, detail))
+            setBadge(string.format('FAILED %d', i), COLOR.danger)
+            setStatus(string.format('Module %d failed \u{2014} %s', i, _shortBody(detail, 80)))
+            setProgress(i / #loaders)
+        else
+            setStatus(string.format('Executing  module %d  \u{2022}  %s', i, hostFromUrl(url)))
+            setBadge(string.format('LOADING  %d/%d', i, #loaders), COLOR.accentHi)
+            setProgress((i - 1) / #loaders + (0.75 / #loaders))
+
+            local fn, err = loadstring(body)
+
+            if not fn then
+                logErr(string.format('Module %d COMPILE ERROR: %s', i, tostring(err)))
+                setBadge(string.format('FAILED %d', i), COLOR.danger)
+                setStatus(string.format('Module %d compile error \u{2014} %s', i, _shortBody(tostring(err), 70)))
+            else
+                logOk(string.format('Module %d compiled (%d bytes), executing...', i, #body))
+                task.spawn(function()
+                    local okRun, runErr = pcall(fn)
+                    if not okRun then
+                        logErr(string.format('Module %d RUNTIME ERROR: %s', i, tostring(runErr)))
+                    else
+                        logOk(string.format('Module %d executed cleanly', i))
+                    end
+                end)
+            end
+
+            setProgress(i / #loaders)
+        end
+
+        if i < #loaders then
+            for remaining = loaderDelay, 1, -1 do
+                if not alive then
+                    return
+                end
+
+                setStatus(string.format('Module %d loaded. Next module in %ds\u{2026}', i, remaining))
+                task.wait(1)
+            end
+        else
+            setStatus("All modules loaded. Leave a rating if you'd like.")
+            logOk('All modules processed.')
+            task.wait(0.4)
+        end
+    end
+end
+
+task.spawn(connectWS)
+task.spawn(function()
+    task.wait(0.4)
+    runLoaders()
+    task.delay(45, function()
+        closeLoader()
+    end)
+end)
