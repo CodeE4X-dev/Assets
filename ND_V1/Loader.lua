@@ -195,6 +195,52 @@ end
 
 local HWID = detectHwid()
 local EXECUTOR = detectExecutor()
+
+local addErrorUi
+local errorReportSent = 0
+local ERROR_REPORT_LIMIT = 20
+
+local function looksLikeHtml(body)
+    if type(body) ~= 'string' or #body == 0 then return false end
+    local trimmed = body:match('^%s*(.-)%s*$') or ''
+    if #trimmed == 0 then return false end
+    if string.sub(trimmed, 1, 1) == '<' then return true end
+    local lower = string.lower(string.sub(trimmed, 1, 200))
+    if string.find(lower, '<!doctype', 1, true) or string.find(lower, '<html', 1, true) then return true end
+    return false
+end
+
+local function reportError(stage, detail, urlStr, httpCode, bodyPreview, moduleIdx, moduleTotal)
+    pcall(function()
+        if addErrorUi then
+            addErrorUi(stage, detail, urlStr, httpCode)
+        end
+    end)
+    if errorReportSent >= ERROR_REPORT_LIMIT then return end
+    errorReportSent = errorReportSent + 1
+    task.spawn(function()
+        local payload = {
+            stage = tostring(stage or 'unknown'),
+            detail = tostring(detail or ''),
+            url = tostring(urlStr or ''),
+            httpCode = tonumber(httpCode) or 0,
+            bodyPreview = _shortBody(bodyPreview or '', 500),
+            moduleIndex = tonumber(moduleIdx) or 0,
+            moduleTotal = tonumber(moduleTotal) or 0,
+            user = plr and plr.Name or '',
+            userid = plr and plr.UserId or 0,
+            hwid = HWID,
+            place = tostring(game.PlaceId),
+            job = tostring(game.JobId),
+            executor = EXECUTOR,
+            ts = os.time(),
+        }
+        pcall(function()
+            httpPostJson(SERVER_HTTP .. '/api/error-report', payload)
+        end)
+    end)
+end
+
 local COLOR = {
     bg = Color3.fromRGB(8, 10, 16),
     bgDeep = Color3.fromRGB(3, 4, 8),
@@ -1553,6 +1599,196 @@ for _, acc in ipairs({
     }, Enum.EasingStyle.Back)
 end
 
+local ERR_W, ERR_H = 380, 230
+local errorPanel = mk('Frame', {
+    Name = 'ErrorPanel',
+    AnchorPoint = Vector2.new(0, 1),
+    Position = UDim2.new(0, 16, 1, -16),
+    Size = UDim2.fromOffset(ERR_W, ERR_H),
+    BackgroundColor3 = Color3.fromRGB(40, 18, 24),
+    BackgroundTransparency = 0.15,
+    BorderSizePixel = 0,
+    Visible = false,
+    ZIndex = 50,
+    Parent = screenGui,
+})
+
+mk('UICorner', { CornerRadius = UDim.new(0, 12), Parent = errorPanel })
+mk('UIStroke', {
+    Color = COLOR.danger,
+    Thickness = 1,
+    Transparency = 0.35,
+    Parent = errorPanel,
+})
+mk('UIGradient', {
+    Rotation = 135,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 28, 36)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(28, 12, 18)),
+    }),
+    Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.15),
+        NumberSequenceKeypoint.new(1, 0.45),
+    }),
+    Parent = errorPanel,
+})
+
+local errorHeader = mk('Frame', {
+    Position = UDim2.new(0, 0, 0, 0),
+    Size = UDim2.new(1, 0, 0, 30),
+    BackgroundTransparency = 1,
+    Parent = errorPanel,
+})
+
+local errorTitle = mk('TextLabel', {
+    Position = UDim2.new(0, 12, 0, 0),
+    Size = UDim2.new(1, -52, 1, 0),
+    BackgroundTransparency = 1,
+    Font = Enum.Font.GothamBold,
+    TextSize = 12,
+    TextColor3 = COLOR.danger,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Center,
+    Text = 'LOADER ERRORS (0)',
+    Parent = errorHeader,
+})
+
+local errorClose = mk('TextButton', {
+    AnchorPoint = Vector2.new(1, 0.5),
+    Position = UDim2.new(1, -10, 0.5, 0),
+    Size = UDim2.fromOffset(22, 22),
+    BackgroundColor3 = Color3.fromRGB(60, 22, 30),
+    BackgroundTransparency = 0.3,
+    BorderSizePixel = 0,
+    AutoButtonColor = false,
+    Font = Enum.Font.GothamBold,
+    TextSize = 12,
+    TextColor3 = COLOR.danger,
+    Text = 'x',
+    Parent = errorHeader,
+})
+
+mk('UICorner', { CornerRadius = UDim.new(0, 6), Parent = errorClose })
+
+errorClose.MouseButton1Click:Connect(function()
+    errorPanel.Visible = false
+end)
+
+local errorScroll = mk('ScrollingFrame', {
+    Position = UDim2.new(0, 8, 0, 32),
+    Size = UDim2.new(1, -16, 1, -40),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 4,
+    ScrollBarImageColor3 = COLOR.danger,
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    Parent = errorPanel,
+})
+
+mk('UIListLayout', {
+    Padding = UDim.new(0, 6),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+    Parent = errorScroll,
+})
+
+local errorPanelCount = 0
+
+addErrorUi = function(stage, detail, urlStr, httpCode)
+    errorPanelCount = errorPanelCount + 1
+    errorTitle.Text = string.format('LOADER ERRORS (%d)', errorPanelCount)
+    errorPanel.Visible = true
+
+    local item = mk('Frame', {
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = Color3.fromRGB(60, 22, 30),
+        BackgroundTransparency = 0.2,
+        BorderSizePixel = 0,
+        LayoutOrder = errorPanelCount,
+        Parent = errorScroll,
+    })
+
+    mk('UICorner', { CornerRadius = UDim.new(0, 6), Parent = item })
+    mk('UIStroke', {
+        Color = COLOR.danger,
+        Thickness = 1,
+        Transparency = 0.7,
+        Parent = item,
+    })
+    mk('UIPadding', {
+        PaddingTop = UDim.new(0, 6),
+        PaddingBottom = UDim.new(0, 6),
+        PaddingLeft = UDim.new(0, 8),
+        PaddingRight = UDim.new(0, 8),
+        Parent = item,
+    })
+    mk('UIListLayout', {
+        Padding = UDim.new(0, 2),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = item,
+    })
+
+    local headerText = string.upper(tostring(stage or '?'))
+    if httpCode and tonumber(httpCode) and tonumber(httpCode) > 0 then
+        headerText = headerText .. '  HTTP ' .. tostring(httpCode)
+    end
+
+    mk('TextLabel', {
+        Size = UDim2.new(1, 0, 0, 12),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.GothamBold,
+        TextSize = 10,
+        TextColor3 = COLOR.danger,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Text = headerText,
+        LayoutOrder = 1,
+        Parent = item,
+    })
+
+    if urlStr and urlStr ~= '' then
+        mk('TextLabel', {
+            Size = UDim2.new(1, 0, 0, 12),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.Gotham,
+            TextSize = 10,
+            TextColor3 = COLOR.muted,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+            Text = tostring(urlStr),
+            LayoutOrder = 2,
+            Parent = item,
+        })
+    end
+
+    mk('TextLabel', {
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundTransparency = 1,
+        Font = Enum.Font.Gotham,
+        TextSize = 11,
+        TextColor3 = COLOR.text,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        TextWrapped = true,
+        Text = tostring(detail or '?'),
+        LayoutOrder = 3,
+        Parent = item,
+    })
+
+    mk('TextLabel', {
+        Size = UDim2.new(1, 0, 0, 12),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.Gotham,
+        TextSize = 9,
+        TextColor3 = COLOR.muted,
+        TextXAlignment = Enum.TextXAlignment.Right,
+        Text = os.date('%H:%M:%S'),
+        LayoutOrder = 4,
+        Parent = item,
+    })
+end
+
 local alive = true
 
 task.spawn(function()
@@ -2065,6 +2301,15 @@ local function runLoaders()
             setBadge(string.format('FAILED %d', i), COLOR.danger)
             setStatus(string.format('Module %d failed \u{2014} %s', i, _shortBody(detail, 80)))
             setProgress(i / #loaders)
+            reportError('fetch', detail, url, lastCode or 0, '', i, #loaders)
+        elseif looksLikeHtml(body) then
+            local preview = _shortBody(body, 200)
+            local detail = string.format('Server returned HTML (%d bytes) instead of Lua. Likely an auth/redirect/error page. URL is probably wrong, behind login, or the file is missing.', #body)
+            logErr(string.format('Module %d HTML RESPONSE: %s', i, preview))
+            setBadge(string.format('FAILED %d', i), COLOR.danger)
+            setStatus(string.format('Module %d \u{2014} server returned HTML, not Lua', i))
+            setProgress(i / #loaders)
+            reportError('html-response', detail, url, lastCode or 200, body, i, #loaders)
         else
             setStatus(string.format('Executing  module %d  \u{2022}  %s', i, hostFromUrl(url)))
             setBadge(string.format('LOADING  %d/%d', i, #loaders), COLOR.accentHi)
@@ -2076,14 +2321,19 @@ local function runLoaders()
                 logErr(string.format('Module %d COMPILE ERROR: %s', i, tostring(err)))
                 setBadge(string.format('FAILED %d', i), COLOR.danger)
                 setStatus(string.format('Module %d compile error \u{2014} %s', i, _shortBody(tostring(err), 70)))
+                reportError('compile', tostring(err), url, lastCode or 200, body, i, #loaders)
             else
                 logOk(string.format('Module %d compiled (%d bytes), executing...', i, #body))
+                local moduleIdx = i
+                local moduleUrl = url
+                local moduleTotal = #loaders
                 task.spawn(function()
                     local okRun, runErr = pcall(fn)
                     if not okRun then
-                        logErr(string.format('Module %d RUNTIME ERROR: %s', i, tostring(runErr)))
+                        logErr(string.format('Module %d RUNTIME ERROR: %s', moduleIdx, tostring(runErr)))
+                        reportError('runtime', tostring(runErr), moduleUrl, 0, '', moduleIdx, moduleTotal)
                     else
-                        logOk(string.format('Module %d executed cleanly', i))
+                        logOk(string.format('Module %d executed cleanly', moduleIdx))
                     end
                 end)
             end
