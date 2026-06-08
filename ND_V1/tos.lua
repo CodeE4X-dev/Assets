@@ -1,3 +1,7 @@
+if _G.Iscx == true then return end
+wait()
+_G.Iscx = true
+repeat wait() until game:IsLoaded()
 local Players           = game:GetService("Players")
 local UserInputService  = game:GetService("UserInputService")
 local TweenService      = game:GetService("TweenService")
@@ -5,8 +9,8 @@ local Lighting          = game:GetService("Lighting")
 local CoreGui           = game:GetService("CoreGui")
 local RunService        = game:GetService("RunService")
 
-local TOS_URL     = "https://4x.wtf/nodex-tos"
-local MAIN_URL    = "https://4x.wtf/main"
+local TOS_URL     = "https://suyo.my.id/tos"
+local MAIN_URL    = "https://suyo.my.id/main"
 local TOS_FILE    = "nodex_confirm_tos.txt"
 
 local function hasToSConfirmed()
@@ -209,7 +213,7 @@ local content = mk("Frame", {
 
 local message = mk("TextLabel", {
     Name = "Message",
-    Text = "By clicking <b>Continue</b>, you agree to the NodeX Terms of Service. Please review the link below before proceeding.",
+    Text = "By clicking <b>Continue</b>, you agree to the vex.cc Terms of Service. Please review the link below before proceeding.",
     RichText = true,
     Font = Enum.Font.Gotham,
     TextSize = 13,
@@ -352,7 +356,7 @@ local spinnerRing = mk("ImageLabel", {
 })
 
 local loaderText = mk("TextLabel", {
-    Text = "Loading NodeX...",
+    Text = "Loading vex.cc...",
     Font = Enum.Font.GothamMedium,
     TextSize = 13,
     TextColor3 = COLOR.subtext,
@@ -486,7 +490,7 @@ local function showLoader()
     local dots, i = { ".", "..", "..." }, 1
     task.spawn(function()
         while loader and loader.Parent and not closed do
-            loaderText.Text = "Loading NodeX" .. dots[i]
+            loaderText.Text = "Loading vex.cc" .. dots[i]
             i = i % 3 + 1
             task.wait(0.35)
         end
@@ -535,4 +539,3 @@ UserInputService.InputBegan:Connect(function(input, processed)
 end)
 
 fadeIn()
-
